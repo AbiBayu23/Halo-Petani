@@ -1,0 +1,31 @@
+<?php
+include 'config.php';
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $keyword = $_POST['keyword'];
+    $sql = "SELECT * FROM pertanyaan WHERE judul_pertanyaan LIKE '%$keyword%' OR isi_pertanyaan LIKE '%$keyword%'";
+    $result = $conn->query($sql);
+
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            echo "Pertanyaan: " . $row["judul_pertanyaan"] . "<br>";
+            echo "Isi: " . $row["isi_pertanyaan"] . "<br><br>";
+        }
+    } else {
+        echo "Tidak ada pertanyaan yang cocok.";
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cari Pertanyaan</title>
+</head>
+<body>
+    <form method="POST" action="">
+        Cari Pertanyaan: <input type="text" name="keyword" required>
+        <button type="submit">Cari</button>a
+    </form>
+</body>
+</html>
