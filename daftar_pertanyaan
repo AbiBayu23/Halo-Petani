@@ -1,0 +1,22 @@
+<?php
+include 'config.php';
+
+$sql = "SELECT * FROM pertanyaan";
+$result = $conn->query($sql);
+
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        echo "Pertanyaan: " . $row["judul_pertanyaan"] . "<br>";
+        echo "Isi: " . $row["isi_pertanyaan"] . "<br>";
+        echo "<form method='POST' action='answer_question.php'>
+                <input type='hidden' name='id_pertanyaan' value='" . $row["id_pertanyaan"] . "'>
+                Jawaban: <textarea name='isi_jawaban' required></textarea><br>
+                <button type='submit'>Kirim Jawaban</button>
+              </form><br><br>";
+    }
+} else {
+    echo "Belum ada pertanyaan.";
+}
+
+$conn->close();
+?>
