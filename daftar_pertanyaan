@@ -1,22 +1,73 @@
 <?php
-include 'config.php';
+include 'db_connection.php';
 
-$sql = "SELECT * FROM pertanyaan";
-$result = $conn->query($sql);
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_pertanyaan']) && isset($_POST['isi_jawaban']) && isset($_POST['id_pengguna'])) {
+    $id_pertanyaan = $_POST['id_pertanyaan'];
+    $isi_jawaban = $_POST['isi_jawaban'];
+    $id_pengguna = $_POST['id_pengguna'];
 
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        echo "Pertanyaan: " . $row["judul_pertanyaan"] . "<br>";
-        echo "Isi: " . $row["isi_pertanyaan"] . "<br>";
-        echo "<form method='POST' action='answer_question.php'>
-                <input type='hidden' name='id_pertanyaan' value='" . $row["id_pertanyaan"] . "'>
+    $sql = "INSERT INTO jawaban (id_pertanyaan, id_pengguna, isi_jawaban, tanggal_posting) 
+            VALUES ('$id_pertanyaan', '$id_pengguna', '$isi_jawaban', CURDATE())";
+
+    if ($conn->query($sql) === TRUE) {
+        echo "Jawaban berhasil diposting!";
+    } else {
+        echo "Error: " . $sql . "<br>" . $conn->error;
+    }
+}
+
+$sql_pertanyaan = "SELECT * FROM pertanyaan ORDER BY tanggal_posting DESC";
+$result_pertanyaan = $conn->query($sql_pertanyaan);
+
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Daftar Pertanyaan</title>
+    <style>
+        .jawaban {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<?php
+if ($result_pertanyaan->num_rows > 0) {
+    while ($pertanyaan = $result_pertanyaan->fetch_assoc()) {
+        echo "<strong>Judul Pertanyaan:</strong> " . $pertanyaan["judul_pertanyaan"] . "<br>";
+        echo "<strong>Isi Pertanyaan:</strong> " . $pertanyaan["isi_pertanyaan"] . "<br>";
+
+        $id_pertanyaan = $pertanyaan["id_pertanyaan"];
+        $sql_jawaban = "SELECT * FROM jawaban WHERE id_pertanyaan = '$id_pertanyaan' ORDER BY tanggal_posting DESC";
+        $result_jawaban = $conn->query($sql_jawaban);
+
+        if ($result_jawaban->num_rows > 0) {
+            while ($jawaban = $result_jawaban->fetch_assoc()) {
+                echo "<div class='jawaban'>";
+                echo "<strong>Jawaban:</strong> " . $jawaban["isi_jawaban"] . "<br>";
+                echo "<strong>Tanggal Jawaban:</strong> " . $jawaban["tanggal_posting"] . "<br>";
+                echo "</div>";
+            }
+        } else {
+            echo "Belum ada jawaban untuk pertanyaan ini.<br>";
+        }
+
+        echo "<form method='POST' action=''>
+                <input type='hidden' name='id_pertanyaan' value='" . $pertanyaan["id_pertanyaan"] . "'>
+                <input type='hidden' name='id_pengguna' value='1'> <!-- Ganti dengan id_pengguna yang valid -->
                 Jawaban: <textarea name='isi_jawaban' required></textarea><br>
                 <button type='submit'>Kirim Jawaban</button>
-              </form><br><br>";
+              </form>";
+
+        echo "<hr>";
     }
 } else {
-    echo "Belum ada pertanyaan.";
+    echo "Belum ada pertanyaan yang diposting.";
 }
 
 $conn->close();
 ?>
+
+</body>
+</html>
