@@ -62,3 +62,29 @@ create table jawaban(
     status_dilaporkan boolean default false,
     foreign key (id_pertanyaan) references pertanyaan (id_pertanyaan),
     foreign key (id_pengguna) references pengguna(id_pengguna));
+create table quality_point(
+    id_quality_point int not null primary key auto_increment,
+    id_pengguna int,
+    id_jawaban int,
+    jumlah_point int,
+    tanggal_pemberian date,
+    foreign key (id_pengguna) references pengguna (id_pengguna),
+    foreign key (id_jawaban) references jawaban (id_jawaban));
+create table rating_artikel(
+    id_rating_artikel int not null primary key auto_increment,
+    id_artikel int,
+    id_pengguna int,
+    rating float,
+    tanggal_rating date,
+    foreign key (id_artikel) references artikel (id_artikel),
+    foreign key (id_pengguna) references pengguna (id_pengguna));
+create table laporan(
+    id_laporan int not null primary key auto_increment,
+    id_pengguna int,
+    id_pertanyaan int,
+    id_jawaban int,
+    alasan_laporan TEXT,
+    tanggal_laporan date,
+    foreign key (id_pengguna) references pengguna (id_pengguna),
+    foreign key (id_pertanyaan) references pertanyaan (id_pertanyaan),
+    foreign key (id_jawaban) references jawaban (id_jawaban));
