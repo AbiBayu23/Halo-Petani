@@ -1,42 +1,42 @@
 create database haloPetani;
 use haloPetani;
 create table Pengguna(
-id_pengguna int not null primary key auto_increment,
-nama varchar (50) not null,
-no_HP int not null,
-password varchar (10),
-total_quality_point int);
+    id_pengguna int not null primary key auto_increment,
+    nama varchar (50) not null,
+    no_HP int not null,
+    password varchar (10),
+    total_quality_point int);
 create table admin(
-    -> id_admin int not null primary key auto_increment,
-    -> nama varchar (100) not null,
-    -> no_HP int not null,
-    -> password varchar (10),
-    -> email varchar (25) not null);
+    id_admin int not null primary key auto_increment,
+    nama varchar (100) not null,
+    no_HP int not null,
+    password varchar (10),
+    email varchar (25) not null);
 create table jenis_tanaman(
-    -> id_tanaman int not null primary key auto_increment,
-    -> nama_ilmiah varchar (100),
-    -> nama_umum varchar (100) not null,
-    -> keluarga varchar (100) not null,
-    -> genus varchar (100) not null,
-    -> spesies varchar (100) not null,
-    -> deskripsi TEXT,
-    -> asal varchar (100) not null,
-    -> habitat varchar (100) not null,
-    -> kegunaan TEXT,
-    -> cara_perawatan TEXT,
-    -> foto varchar (50),
-    -> Status_konservasi varchar (100),
-    -> kondisi_pertumbuhan TEXT);
+    id_tanaman int not null primary key auto_increment,
+    nama_ilmiah varchar (100),
+    nama_umum varchar (100) not null,
+    keluarga varchar (100) not null,
+    genus varchar (100) not null,
+    spesies varchar (100) not null,
+    deskripsi TEXT,
+    asal varchar (100) not null,
+    habitat varchar (100) not null,
+    kegunaan TEXT,
+    cara_perawatan TEXT,
+    foto varchar (50),
+    Status_konservasi varchar (100),
+    kondisi_pertumbuhan TEXT);
 create table jenis_artikel(
-    -> id_jenis_artikel int not null primary key auto_increment,
-    -> nama_jenis_artikel varchar (100) not null);
+    id_jenis_artikel int not null primary key auto_increment,
+    nama_jenis_artikel varchar (100) not null);
 create table artikel(
-    -> id_artikel int not null primary key auto_increment,
-    -> id_admin int not null,
-    -> id_jenis_artikel int not null,
-    -> judul_artikel varchar (100) not null,
-    -> isi_artikel TEXT,
-    -> tanggal_posting date not null,
-    -> rata_rata_rating double precision,
-    -> foreign key (id_admin) references admin (id_admin),
-    -> foreign key (id_jenis_artikel) references jenis_artikel (id_jenis_artikel));
+    id_artikel int not null primary key auto_increment,
+    id_admin int not null,
+    id_jenis_artikel int not null,
+    judul_artikel varchar (100) not null,
+    isi_artikel TEXT,
+    tanggal_posting date not null,
+    rata_rata_rating double precision,
+    foreign key (id_admin) references admin (id_admin),
+    foreign key (id_jenis_artikel) references jenis_artikel (id_jenis_artikel));
