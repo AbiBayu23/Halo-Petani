@@ -5,13 +5,15 @@ create table Pengguna(
     nama varchar (50) not null,
     no_HP int not null,
     password varchar (10),
+    tanggal_daftar date,
     total_quality_point int);
 create table admin(
     id_admin int not null primary key auto_increment,
     nama varchar (100) not null,
     no_HP int not null,
     password varchar (10),
-    email varchar (25) not null);
+    email varchar (25) not null,
+    tanggal_daftar date);
 create table jenis_tanaman(
     id_tanaman int not null primary key auto_increment,
     nama_ilmiah varchar (100),
@@ -40,3 +42,23 @@ create table artikel(
     rata_rata_rating double precision,
     foreign key (id_admin) references admin (id_admin),
     foreign key (id_jenis_artikel) references jenis_artikel (id_jenis_artikel));
+ create table pertanyaan(
+    id_pertanyaan int not null primary key auto_increment,
+    id_tanaman int,
+    id_pengguna int,
+    judul_pertanyaan varchar (100) not null,
+    isi_pertanyaan TEXT,
+    tanggal_posting date,
+    status_dilaporkan boolean default false,
+    foreign key (id_tanaman) references jenis_tanaman(id_tanaman),
+    foreign key (id_pengguna) references pengguna (id_pengguna));
+create table jawaban(
+    id_jawaban int not null primary key auto_increment,
+    id_pertanyaan int,
+    id_pengguna int,
+    isi_jawaban TEXT,
+    tanggal_posting date,
+    like_count int default 0,
+    status_dilaporkan boolean default false,
+    foreign key (id_pertanyaan) references pertanyaan (id_pertanyaan),
+    foreign key (id_pengguna) references pengguna(id_pengguna));
