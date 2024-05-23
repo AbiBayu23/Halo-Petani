@@ -1,0 +1,20 @@
+<?php
+include 'config.php';
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $id_pertanyaan = $_POST['id_pertanyaan'];
+    $isi_jawaban = $_POST['isi_jawaban'];
+    $id_pengguna = 1;
+
+    $sql = "INSERT INTO jawaban (id_pertanyaan, id_pengguna, isi_jawaban, tanggal_posting) 
+            VALUES ($id_pertanyaan, $id_pengguna, '$isi_jawaban', CURDATE())";
+
+    if ($conn->query($sql) === TRUE) {
+        echo "Jawaban berhasil diposting!";
+    } else {
+        echo "Error: " . $sql . "<br>" . $conn->error;
+    }
+}
+
+$conn->close();
+?>
