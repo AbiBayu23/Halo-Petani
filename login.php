@@ -2,10 +2,11 @@
 $server = "localhost";
 $user = "root";
 $password = "Perkasa23@rcm";
-$nama_database = "Halo Petani";
+$nama_database = "halopetani";
+$noHP="no_HP";
 
 // Buat koneksi ke database
-$conn = new mysqli($servername, $username_db, $password_db, $dbname);
+$conn = new mysqli($server, $user, $password, $nama_database);
 
 // Periksa koneksi
 if ($conn->connect_error) {
@@ -18,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $noHP = $_POST['noHP'];
 
     // Cari user berdasarkan username dan noHP
-    $stmt = $conn->prepare("SELECT password FROM users WHERE username = ? AND noHP = ?");
+    $stmt = $conn->prepare("SELECT password FROM pengguna WHERE username = ? AND noHP = ?");
     $stmt->bind_param("ss", $username, $noHP);
     $stmt->execute();
     $stmt->store_result();
