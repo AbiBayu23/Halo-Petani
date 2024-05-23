@@ -1,5 +1,5 @@
 <?php
-include 'db_connection.php';
+include 'config.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_pertanyaan']) && isset($_POST['isi_jawaban']) && isset($_POST['id_pengguna'])) {
     $id_pertanyaan = $_POST['id_pertanyaan'];
