@@ -17,6 +17,30 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Ambil data admin dari tabel
+$sql = "SELECT id_admin, password FROM admin";
+$result = $conn->query($sql);
+
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $id = $row['id_admin'];
+        $password = $row['password'];
+
+        // Hash password
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+        // Simpan hashed password ke dalam kolom baru
+        $update_sql = "UPDATE admin SET hashed_password='$hashed_password' WHERE id_admin=$id";
+        if ($conn->query($update_sql) === TRUE) {
+            echo "Password berhasil di-hash dan disimpan kembali untuk id $id.<br>";
+        } else {
+            echo "Error updating record for id $id: " . $conn->error . "<br>";
+        }
+    }
+} else {
+    echo "Tidak ada data admin yang ditemukan.";
+}
+
 // Ambil data dari form login
 $username = $_POST['username'];
 $password = $_POST['password'];
@@ -30,7 +54,7 @@ $password = stripslashes($password);
 $username = mysqli_real_escape_string($conn, $username);
 
 // Query untuk mengambil data admin dari database
-$sql = "SELECT username, password FROM admin WHERE username=?";
+$sql = "SELECT username, hashed_password FROM admin WHERE username=?";
 $stmt = $conn->prepare($sql);
 
 if ($stmt === false) {
@@ -41,7 +65,6 @@ $stmt->bind_param("s", $username);
 $stmt->execute();
 $result = $stmt->get_result();
 
-
 // Debug: Check the query result
 if ($result === false) {
     die("Execute failed: " . $stmt->error);
@@ -49,12 +72,10 @@ if ($result === false) {
 
 if ($result->num_rows == 1) {
     $row = $result->fetch_assoc();
-    $hashed_password = $row['password'];
+    $hashed_password = $row['hashed_password'];
 
-  
     // Verifikasi password
     if (password_verify($password, $hashed_password)) {
-
         // Login berhasil, redirect ke halaman admin
         session_start();
         $_SESSION['admin_username'] = $username;
