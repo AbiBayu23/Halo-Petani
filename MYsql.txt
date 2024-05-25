@@ -10,10 +10,8 @@ CREATE TABLE pengguna (
 create table admin(
     id_admin int not null primary key auto_increment,
     nama varchar (100) not null,
-    no_HP int not null,
     password varchar (10),
-    email varchar (25) not null,
-    tanggal_daftar date);
+    hashed_password VARCHAR(255) NOT NULL AFTER password;
 create table jenis_tanaman(
     id_tanaman int not null primary key auto_increment,
     nama_ilmiah varchar (100),
