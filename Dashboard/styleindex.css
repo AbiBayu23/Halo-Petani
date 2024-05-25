@@ -70,7 +70,7 @@ body {
 }
 
 .deskripsi {
-    font-size: 18px;
+    font-size: 25px;
     margin-bottom: 10px;
 }
 
@@ -148,7 +148,7 @@ nav ul li {
 }
 
 nav ul li a {
-    color: black;
+    color: rgb(255, 255, 255);
     font-weight: bold;
     text-align: center;
     padding: 0px 16px 0px 16px;
@@ -219,12 +219,12 @@ h2 {
 }
 
 a.tbl-biru:hover {
-    background: #fc5185;
+    background: #efefef;
     text-decoration: none;
 }
 
 a.tbl-pink {
-    background: #fc5185;
+    background: #3f72af;
     border-radius: 20px;
     margin-top: 20px;
     padding: 15px 20px 15px 20px;
@@ -234,7 +234,7 @@ a.tbl-pink {
 }
 
 a.tbl-pink:hover {
-    background: #3f72af;
+    background: #000000;
     text-decoration: none;
 }
 
@@ -303,7 +303,8 @@ p {
     margin: auto;
 }
 nav {
-    background-color: #007bff; /* Mengubah warna background menjadi biru */
+    background-color: #ffffff; /* Mengubah warna background menjadi biru */
+    box-shadow: 0 0px 1px 0px gray;
 }
 
 nav ul li a {
@@ -314,8 +315,8 @@ nav ul li a:hover {
     text-decoration: none; /* Menghapus garis bawah saat dihover */
 }
 nav {
-    background-color: #007bff; /* Mengubah warna background menjadi biru */
-    border-bottom: 1px solid #fff; /* Menambahkan garis bawah putih */
+    background-color: #ffffff; /* Mengubah warna background menjadi biru */
+    border-bottom: 1px solid #000000; /* Menambahkan garis bawah putih */
 }
 
 .centered-section {
@@ -367,8 +368,8 @@ h2 {
 }
 
 .tbl-biru {
-    background-color: #007bff; /* Warna latar belakang tombol */
-    color: #fff; /* Warna teks tombol */
+    background-color: #ffffff; /* Warna latar belakang tombol */
+    color: #000000; /* Warna teks tombol */
     border: none; /* Hapus border */
     padding: 12px 24px; /* Padding tombol */
     border-radius: 5px; /* Border radius */
@@ -377,7 +378,7 @@ h2 {
 }
 
 .tbl-biru:hover {
-    background-color: #0056b3; /* Warna latar belakang saat dihover */
+    background-color: #ffffff; /* Warna latar belakang saat dihover */
 }
 /* styles.css */
 #pertanyaan {
