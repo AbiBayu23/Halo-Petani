@@ -461,5 +461,28 @@ h2 {
 }
 
 
+body {
+    font-family: Arial, sans-serif;
+}
+.wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+.footer-section {
+    flex: 1;
+    min-width: 200px;
+    margin: 10px;
+}
+.footer-section h3 {
+    margin-top: 0;
+}
+
+
 
 
