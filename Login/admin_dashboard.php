@@ -19,5 +19,6 @@ if (!isset($_SESSION['admin_username'])) {
 <body>
     <h2>Selamat datang, <?php echo $_SESSION['admin_username']; ?></h2>
     <p>Ini adalah halaman dashboard admin.</p>
+    <p><a href='DashboardUser.html'>Selanjutnya</a>.</p>
 </body>
 </html>
