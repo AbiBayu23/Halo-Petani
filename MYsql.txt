@@ -60,14 +60,14 @@ create table jawaban(
     status_dilaporkan boolean default false,
     foreign key (id_pertanyaan) references pertanyaan (id_pertanyaan),
     foreign key (id_pengguna) references pengguna(id));
-CREATE TABLE penilaian_jawaban (
-    id_penilaian_jawaban INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE rating_jawaban (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     id_jawaban INT NOT NULL,
     id_pengguna INT NOT NULL,
-    penilaian BOOLEAN NOT NULL,
-    tanggal_penilaian DATE NOT NULL,
-    FOREIGN KEY (id_jawaban) REFERENCES jawaban (id_jawaban),
-    FOREIGN KEY (id_pengguna) REFERENCES pengguna (id));
+    nilai INT NOT NULL CHECK (nilai >= 1 AND nilai <= 5),
+    tanggal_rating DATE NOT NULL,
+    FOREIGN KEY (id_jawaban) REFERENCES jawaban(id_jawaban),
+    FOREIGN KEY (id_pengguna) REFERENCES pengguna(id));
 create table quality_point(
     id_quality_point int not null primary key auto_increment,
     id_pengguna int,
