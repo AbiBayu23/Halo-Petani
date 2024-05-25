@@ -30,8 +30,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Verifikasi password
         if (password_verify($password, $hashed_password)) {
-            echo "Login successful! <a href='DashboardUser.html'>Selanjutnya</a>.";
-            
+            header("Location: DashboardUser.html");
+            exit();
         } else {
             echo "Invalid password.";
         }
