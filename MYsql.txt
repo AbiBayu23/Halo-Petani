@@ -47,6 +47,8 @@ create table artikel(
     judul_pertanyaan varchar (100) not null,
     isi_pertanyaan TEXT,
     tanggal_posting date,
+    kategori VARCHAR(255),
+    foto VARCHAR(255),
     status_dilaporkan boolean default false,
     foreign key (id_tanaman) references jenis_tanaman(id_tanaman),
     foreign key (id_pengguna) references pengguna (id));
