@@ -79,7 +79,7 @@ if ($result->num_rows == 1) {
         // Login berhasil, redirect ke halaman admin
         session_start();
         $_SESSION['admin_username'] = $username;
-        header("location: admin_dashboard.php");
+        header("location: DashboardUser.html");
         exit();
     } else {
         echo "Password salah. <a href='login_admin.html'>Coba lagi</a>";
