@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HALLO PETANI</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <nav>
+        <div class="wrapper">
+            <div class="logo"><a href=''>HALLO PETANI</a></div>
+            <div class="menu">
+                <ul>
+                    <li><a href="#beranda">Beranda</a></li>
+                    <li><a href="#profil">Profil</a></li>
+                    <li><a href="#pertanyaan">Pertanyaan</a></li>
+                    <li><a href="#artikel">Artikel</a></li>
+                    <li><a href="#kontak">Kontak</a></li>
+                    <li><a href="" class="tbl-biru">Sign Up</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="wrapper">
+        <!-- untuk home -->
+        <section id="beranda">
+            <img src="../image/petani.jpg"/>
+            <div class="kolom">
+                <p class="deskripsi">Belajar Tanaman dari Rumah</p>
+                <h2>Hidup Sehat dengan Berkebun</h2>
+                <p>Hallo Petani adalah aplikasi inovatif yang dirancang khusus untuk memberikan pengetahuan dan informasi terkini mengenai dunia pertanian. Kami memahami betapa pentingnya pengetahuan dalam meningkatkan hasil dan kualitas pertanian. Oleh karena itu, melalui aplikasi ini, kami hadir untuk mendukung para petani dengan berbagai fitur edukatif yang bermanfaat.
+                </p>
+                <p><a href="" class="tbl-pink">Pelajari Lebih Lanjut</a></p>
+            </div>
+        </section>
+
+        <!-- untuk profil -->
+<!-- untuk profil -->
+<section id="profil">
+    <div class="kolom">
+        <p class="deskripsi">Profil Anda</p>
+        <div class="profil-info">
+            <p><strong>Nama:</strong> John Doe</p>
+            <p><strong>Email:</strong> johndoe@example.com</p>
+            <p><strong>Pekerjaan:</strong> Petani</p>
+            <p><strong>Deskripsi:</strong> Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem, adipisci.</p>
+        </div>
+    </div>
+</section>
+
+
+
+        <!-- untuk pertanyaan -->
+        <section id="pertanyaan">
+            <div class="tengah">
+                <div class="kolom">
+                    <p class="deskripsi">Ajukan Pertanyaan</p>
+                    <form id="question-form">
+                        <textarea id="question" name="question" rows="4" placeholder="Tulis pertanyaan Anda di sini..."></textarea>
+                        <button type="submit" class="tbl-biru">Kirim Pertanyaan</button>
+                    </form>
+                </div>
+    
+                <div class="tutor-list">
+                    <!-- Ini adalah bagian untuk menampilkan pertanyaan dan jawaban -->
+                    <!-- Area di atas akan diisi dengan pertanyaan dan jawaban yang dikirim oleh pengguna -->
+                </div>
+            </div>
+        </section>
+    
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const questionForm = document.getElementById('question-form');
+                const tutorList = document.querySelector('.tutor-list');
+    
+                questionForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const questionText = document.getElementById('question').value;
+                    if (questionText.trim() === '') return;
+    
+                    const questionDiv = document.createElement('div');
+                    questionDiv.classList.add('question');
+                    questionDiv.innerHTML = `
+                        <p>Pertanyaan: ${questionText}</p>
+                        <p>Jawaban:</p>
+                        <ul class="answers"></ul>
+                        <form class="answer-form">
+                            <textarea class="answer-input" rows="2" placeholder="Tulis jawaban Anda di sini..."></textarea>
+                            <button type="button" class="tbl-biru submit-answer">Kirim Jawaban</button>
+                        </form>
+                    `;
+                    tutorList.appendChild(questionDiv);
+                    document.getElementById('question').value = '';
+    
+                    const answerButton = questionDiv.querySelector('.submit-answer');
+                    answerButton.addEventListener('click', () => {
+                        const answerInput = questionDiv.querySelector('.answer-input');
+                        const answerText = answerInput.value;
+                        if (answerText.trim() === '') return;
+    
+                        const answerList = questionDiv.querySelector('.answers');
+                        const answerItem = document.createElement('li');
+                        answerItem.textContent = answerText;
+                        answerList.appendChild(answerItem);
+                        answerInput.value = '';
+                    });
+                });
+            });
+        </script>
+
+
+<!-- untuk artikel -->
+<section id="artikel">
+    <div class="kolom">
+        <h2>Masukkan Artikel Anda</h2>
+        <form action="submit_article.php" method="POST" enctype="multipart/form-data">
+            <input type="text" name="judul" placeholder="Judul Artikel" class="answer-input">
+            <textarea name="konten" placeholder="Konten Artikel" class="answer-input"></textarea>
+            <input type="file" name="file">
+            <button type="submit" class="tbl-biru">Kirim Artikel</button>
+        </form>
+    </div>
+    </section>
+
+
+
+    <footer id="kontak">
+        <div class="wrapper">
+            <div class="footer-container">
+                <div class="footer-section">
+                    <h3>Hallo Petani</h3>
+                    <p>Menyediakan layanan konsultasi berbayar selama 1 bulan</p>
+                </div>
+                <div class="footer-section">
+                    <h3>About</h3>
+                    <p>Website resmi yang menyediakan layanan untuk kepentingan petani</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p>Telp : 000000000101</p>
+                    <p>Jl. Badak dan kaki tiga</p>
+                    <p>Kode Pos: 666</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Social</h3>
+                    <p><b>YouTube:</b> Hallo Petani</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <footer id="copyright">
+        <div class="wrapper">
+            &copy; 2024. <b>Hallo Petani</b> All Rights Reserved.
+        </div>
+    </footer>
+    
+</body>
+</html>
