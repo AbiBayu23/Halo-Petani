@@ -1,0 +1,263 @@
+<?php
+include 'config.php';
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (isset($_POST['id_pertanyaan']) && isset($_POST['isi_jawaban']) && isset($_POST['id_pengguna'])) {
+        $id_pertanyaan = $_POST['id_pertanyaan'];
+        $isi_jawaban = $_POST['isi_jawaban'];
+        $id_pengguna = $_POST['id_pengguna'];
+
+        $stmt = $conn->prepare("INSERT INTO jawaban (id_pertanyaan, id_pengguna, isi_jawaban, tanggal_posting) VALUES (?, ?, ?, CURDATE())");
+        $stmt->bind_param("iis", $id_pertanyaan, $id_pengguna, $isi_jawaban);
+
+        if ($stmt->execute()) {
+            echo "Jawaban berhasil diposting!";
+        } else {
+            echo "Error: " . $stmt->error;
+        }
+        $stmt->close();
+    }
+
+    if (isset($_POST['id_jawaban']) && isset($_POST['nilai']) && isset($_POST['id_pengguna'])) {
+        $id_jawaban = $_POST['id_jawaban'];
+        $nilai = $_POST['nilai'];
+        $id_pengguna = $_POST['id_pengguna'];
+
+        $sql_check_rating = "SELECT * FROM rating_jawaban WHERE id_jawaban = ? AND id_pengguna = ?";
+        $stmt_check_rating = $conn->prepare($sql_check_rating);
+        $stmt_check_rating->bind_param("ii", $id_jawaban, $id_pengguna);
+        $stmt_check_rating->execute();
+        $result_check_rating = $stmt_check_rating->get_result();
+
+        if ($result_check_rating->num_rows > 0) {
+            $stmt_update_rating = $conn->prepare("UPDATE rating_jawaban SET nilai = ?, tanggal_rating = CURDATE() WHERE id_jawaban = ? AND id_pengguna = ?");
+            $stmt_update_rating->bind_param("iii", $nilai, $id_jawaban, $id_pengguna);
+
+            if ($stmt_update_rating->execute()) {
+                echo "Rating berhasil diperbarui!";
+            } else {
+                echo "Error: " . $stmt_update_rating->error;
+            }
+            $stmt_update_rating->close();
+        } else {
+            $stmt_insert_rating = $conn->prepare("INSERT INTO rating_jawaban (id_jawaban, id_pengguna, nilai, tanggal_rating) VALUES (?, ?, ?, CURDATE())");
+            $stmt_insert_rating->bind_param("iii", $id_jawaban, $id_pengguna, $nilai);
+
+            if ($stmt_insert_rating->execute()) {
+                echo "Rating berhasil diberikan!";
+            } else {
+                echo "Error: " . $stmt_insert_rating->error;
+            }
+            $stmt_insert_rating->close();
+        }
+
+        $stmt_check_rating->close();
+    }
+
+    if (isset($_POST['like']) && isset($_POST['id_jawaban']) && isset($_POST['id_pengguna'])) {
+        $id_jawaban = $_POST['id_jawaban'];
+        $id_pengguna = $_POST['id_pengguna'];
+
+        $sql_check_quality = "SELECT * FROM quality_point WHERE id_jawaban = '$id_jawaban' AND id_pengguna = '$id_pengguna'";
+        $result_check_quality = $conn->query($sql_check_quality);
+
+        if ($result_check_quality->num_rows == 0) {
+            $stmt_quality = $conn->prepare("INSERT INTO quality_point (id_pengguna, id_jawaban, jumlah_point, tanggal_pemberian) VALUES (?, ?, 2, CURDATE())");
+            $stmt_quality->bind_param("ii", $id_pengguna, $id_jawaban);
+
+            if ($stmt_quality->execute()) {
+                echo "Like berhasil diberikan dan quality point berhasil ditambahkan!";
+            } else {
+                echo "Error: " . $stmt_quality->error;
+            }
+            $stmt_quality->close();
+        } else {
+            echo "Anda sudah memberikan like pada jawaban ini.";
+        }
+    }
+
+    if (isset($_POST['unlike']) && isset($_POST['id_jawaban']) && isset($_POST['id_pengguna'])) {
+        $id_jawaban = $_POST['id_jawaban'];
+        $id_pengguna = $_POST['id_pengguna'];
+
+        $sql_delete_quality = "DELETE FROM quality_point WHERE id_jawaban = '$id_jawaban' AND id_pengguna = '$id_pengguna'";
+        if ($conn->query($sql_delete_quality) === TRUE) {
+            echo "Unlike berhasil!";
+        } else {
+            echo "Error: " . $conn->error;
+        }
+    }
+}
+
+$sql_pertanyaan = "SELECT * FROM pertanyaan ORDER BY tanggal_posting DESC";
+$result_pertanyaan = $conn->query($sql_pertanyaan);
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Daftar Pertanyaan</title>
+    <style>
+        .jawaban {
+            margin-bottom: 20px;
+        }
+        .rating {
+            direction: rtl;
+            unicode-bidi: bidi-override;
+            font-size: 1.5em;
+            display: inline-block;
+        }
+        .rating input {
+            display: none;
+        }
+        .rating label {
+            color: #ddd;
+            float:
+            right;
+        }
+        .rating input:checked ~ label,
+        .rating input:checked ~ label ~ label {
+            color: #f5b301;
+        }
+        .rating label:hover,
+        .rating label:hover ~ label {
+            color: #ffdd44;
+        }
+        .result-rating {
+            color: #f5b301;
+            font-size: 1.5em;
+        }
+        .result-rating .star {
+            color: #ddd;
+        }
+        .result-rating .filled {
+            color: #f5b301;
+        }
+        .like-button {
+            background-color: #008CBA;
+            color: white;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .like-count {
+            font-size: 1.2em;
+            color: #008CBA;
+        }
+        .unlike-button {
+            background-color: #f44336;
+            color: white;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<?php
+function display_stars($rating) {
+    $stars = "";
+    for ($i = 1; $i <= 5; $i++) {
+        if ($i <= $rating) {
+            $stars .= "<span class='star filled'>★</span>";
+        } else {
+            $stars .= "<span class='star'>★</span>";
+        }
+    }
+    return $stars;
+}
+
+if ($result_pertanyaan->num_rows > 0) {
+    while ($pertanyaan = $result_pertanyaan->fetch_assoc()) {
+        echo "<strong>Judul Pertanyaan:</strong> " . htmlspecialchars($pertanyaan["judul_pertanyaan"]) . "<br>";
+        echo "<strong>Isi Pertanyaan:</strong> " . htmlspecialchars($pertanyaan["isi_pertanyaan"]) . "<br>";
+
+        $id_pertanyaan = $pertanyaan["id_pertanyaan"];
+        $sql_jawaban = "SELECT * FROM jawaban WHERE id_pertanyaan = '$id_pertanyaan' ORDER BY tanggal_posting DESC";
+        $result_jawaban = $conn->query($sql_jawaban);
+
+        if ($result_jawaban->num_rows > 0) {
+            while ($jawaban = $result_jawaban->fetch_assoc()) {
+                echo "<div class='jawaban'>";
+                echo "<strong>Jawaban:</strong> " . htmlspecialchars($jawaban["isi_jawaban"]) . "<br>";
+                echo "<strong>Tanggal Jawaban:</strong> " . htmlspecialchars($jawaban["tanggal_posting"]) . "<br>";
+
+                $id_jawaban = $jawaban["id_jawaban"];
+                $sql_rating = "SELECT AVG(nilai) as rata_rata, COUNT(nilai) as total_rating FROM rating_jawaban WHERE id_jawaban = '$id_jawaban'";
+                $result_rating = $conn->query($sql_rating);
+                $row_rating = $result_rating->fetch_assoc();
+                $rata_rata = $row_rating['rata_rata'] ? round($row_rating['rata_rata'], 2) : 0;
+                $total_rating = $row_rating['total_rating'] ? $row_rating['total_rating'] : 0;
+                echo "<strong>Rata-rata Rating:</strong> <span class='result-rating'>" . display_stars($rata_rata) . " (" . $rata_rata . ")</span><br>";
+                echo "<strong>Total Rating:</strong> " . $total_rating . " orang<br>";
+
+                $sql_like = "SELECT SUM(jumlah_point) as total_likes FROM quality_point WHERE id_jawaban = '$id_jawaban'";
+                $result_like = $conn->query($sql_like);
+                $row_like = $result_like->fetch_assoc();
+                $total_likes = $row_like['total_likes'] ? $row_like['total_likes'] / 2 : 0;
+
+                echo "<strong>Total Likes:</strong> <span class='like-count'>" . intval($total_likes) . "</span><br>";
+
+                echo "<form method='POST' action=''>
+                        <input type='hidden' name='id_jawaban' value='" . htmlspecialchars($jawaban["id_jawaban"]) . "'>
+                        <input type='hidden' name='id_pengguna' value='1'> <!-- Ganti dengan id_pengguna yang valid -->
+                        <div class='rating'>
+                            <input type='radio' id='star5-" . htmlspecialchars($jawaban["id_jawaban"]) . "' name='nilai' value='5'><label for='star5-" . htmlspecialchars($jawaban["id_jawaban"]) . "'>★</label>
+                            <input type='radio' id='star4-" . htmlspecialchars($jawaban["id_jawaban"]) . "' name='nilai' value='4'><label for='star4-" . htmlspecialchars($jawaban["id_jawaban"]) . "'>★</label>
+                            <input type='radio' id='star3-" . htmlspecialchars($jawaban["id_jawaban"]) . "' name='nilai' value='3'><label for='star3-" . htmlspecialchars($jawaban["id_jawaban"]) . "'>★</label>
+                            <input type='radio' id='star2-" . htmlspecialchars($jawaban["id_jawaban"]) . "' name='nilai' value='2'><label for='star2-" . htmlspecialchars($jawaban["id_jawaban"]) . "'>★</label>
+                            <input type='radio' id='star1-" . htmlspecialchars($jawaban["id_jawaban"]) . "' name='nilai' value='1'><label for='star1-" . htmlspecialchars($jawaban["id_jawaban"]) . "'>★</label>
+                        </div>
+                        <button type='submit'>Beri Rating</button>
+                      </form>";
+
+                echo "<form method='POST' action=''>
+                        <input type='hidden' name='id_jawaban' value='" . htmlspecialchars($jawaban["id_jawaban"]) . "'>
+                        <input type='hidden' name='id_pengguna' value='1'> <!-- Ganti dengan id_pengguna yang valid -->
+                        <input type='hidden' name='like' value='1'>
+                        <button type='submit' class='like-button'>Like</button>
+                      </form>";
+
+                echo "<form method='POST' action=''>
+                        <input type='hidden' name='id_jawaban' value='" . htmlspecialchars($jawaban["id_jawaban"]) . "'>
+                        <input type='hidden' name='id_pengguna' value='1'> <!-- Ganti dengan id_pengguna yang valid -->
+                        <input type='hidden' name='unlike' value='1'>
+                        <button type='submit
+                        ' class='unlike-button'>Unlike</button>
+                        </form>";
+  
+                  echo "</div>";
+              }
+          } else {
+              echo "Belum ada jawaban untuk pertanyaan ini.<br>";
+          }
+  
+          echo "<form method='POST' action=''>
+                  <input type='hidden' name='id_pertanyaan' value='" . htmlspecialchars($pertanyaan["id_pertanyaan"]) . "'>
+                  <input type='hidden' name='id_pengguna' value='1'> <!-- Ganti dengan id_pengguna yang valid -->
+                  Jawaban: <textarea name='isi_jawaban' required></textarea><br>
+                  <button type='submit'>Kirim Jawaban</button>
+                </form>";
+  
+          echo "<hr>";
+      }
+  } else {
+      echo "Belum ada pertanyaan yang diposting.";
+  }
+  
+  $conn->close();
+  ?>
+  
+  </body>
+  </html>
+  
