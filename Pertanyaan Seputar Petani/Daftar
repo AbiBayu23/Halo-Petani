@@ -115,7 +115,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 echo "<div class='jawaban'>";
                 echo "<strong>Jawaban:</strong> " . htmlspecialchars($jawaban["isi_jawaban"]) . "<br>";
                 echo "<strong>Dikirim oleh:</strong> " . htmlspecialchars($jawaban["username"]) . "<br>";
-                // Sisipkan kode HTML atau CSS untuk tampilan jawaban dan informasi pengguna
                 echo "</div>";
             }
         }
@@ -156,7 +155,7 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
 }
 
 h1 {
-    color: #6b8e23; /* Warna hijau yang mengingatkan pada tanaman */
+    color: #6b8e23;
     text-align: center;
     font-family: 'Georgia', serif;
 }
@@ -170,7 +169,7 @@ h1 {
 }
 
 .pertanyaan {
-    background-color: #f0fff0; /* Latar belakang hijau terang */
+    background-color: #f0fff0;
 }
 
 .jawaban {
@@ -178,7 +177,7 @@ h1 {
 }
 
 strong {
-    color: #2e8b57; /* Warna hijau */
+    color: #2e8b57;
 }
 
 .image {
@@ -227,23 +226,23 @@ strong {
     color: #f5b301;
 }
 .like-button, .unlike-button {
-        background-color: #6b8e23; /* Hijau yang lebih gelap */
+        background-color: #6b8e23;
         color: white;
-        padding: 5px 8px; /* Atur padding agar tombol tidak terlalu besar */
+        padding: 5px 8px;
         text-align: center;
         text-decoration: none;
         display: inline-block;
-        font-size: 12px; /* Atur ukuran font agar sesuai */
+        font-size: 12px;
         border: none;
         border-radius: 4px;
         cursor: pointer;
-        width: 50px; /* Atur lebar tombol */
-        height: 30px; /* Atur tinggi tombol */
+        width: 50px;
+        height: 30px;
     }
 
     .unlike-button::after {
-        content: "\1F447"; /* Unicode untuk ikon jempol ke bawah */
-        margin-left: 5px; /* Atur jarak antara tombol dan ikon */
+        content: "\1F447";
+        margin-left: 5px;
     }
 textarea {
     width: 100%;
@@ -256,7 +255,7 @@ textarea {
 }
 
 input[type="submit"] {
-    background-color: #6b8e23; /* Hijau yang lebih gelap */
+    background-color: #6b8e23;
     color: white;
     padding: 10px 15px;
     border: none;
@@ -268,7 +267,7 @@ input[type="submit"] {
 .footer {
     text-align: center;
     padding: 20px;
-    background-color: #6b8e23; /* Hijau yang lebih gelap */
+    background-color: #6b8e23;
     color: white;
     position: fixed;
     bottom: 0;

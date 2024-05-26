@@ -1,0 +1,87 @@
+<?php
+include 'config.php';
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Top Sepuluh Pengguna - Tema Petani</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #6b8e23;
+            text-align: center;
+        }
+        ol {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #fafafa;
+        }
+        li:nth-child(odd) {
+            background-color: #f0fff0;
+        }
+        .username {
+            color: #6b8e23;
+            font-weight: bold;
+        }
+        .total-point {
+            color: #2e8b57;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Top Sepuluh Petani Terbaik</h1>
+    <?php
+
+    if ($conn->connect_error) {
+        die("Koneksi gagal: " . $conn->connect_error);
+    }
+
+
+    $sql = "SELECT pengguna.username, SUM(quality_point.jumlah_point) AS total_point
+            FROM pengguna
+            JOIN quality_point ON pengguna.id = quality_point.id_pengguna
+            GROUP BY pengguna.id
+            ORDER BY total_point DESC
+            LIMIT 10";
+
+    $result = $conn->query($sql);
+
+    if ($result->num_rows > 0) {
+        echo "<ol>";
+        $nomor = 1;
+        while ($row = $result->fetch_assoc()) {
+            echo "<li><span class='username'>" . $nomor . ". " . $row["username"] . "</span> - Total Poin: <span class='total-point'>" . $row["total_point"] . "</span></li>";
+            $nomor++;
+        }
+        echo "</ol>";
+    } else {
+        echo "Tidak ada pengguna yang ditemukan.";
+    }
+
+    $conn->close();
+    ?>
+</div>
+
+</body>
+</html>
