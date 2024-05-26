@@ -1,0 +1,32 @@
+/* Style untuk tombol Like */
+.like-btn {
+  display: inline-block;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  text-align: center;
+  text-decoration: none;
+}
+
+/* Style untuk tombol Unlike */
+.like-btn[data-liked="true"] {
+  background-color: #dc3545;
+}
+
+/* Style untuk ikon */
+.like-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+  background-size: cover;
+  display: inline-block;
+}
+
+/* Style untuk jumlah like */
+.like-count {
+  margin-left: 5px;
+}
