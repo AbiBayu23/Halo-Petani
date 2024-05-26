@@ -7,30 +7,51 @@
     <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="css/util.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
+    <script>
+        function validateForm() {
+            var emailInput = document.forms["signupForm"]["email"].value;
+            var emailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+            if (!emailPattern.test(emailInput)) {
+                alert("Please enter a valid Gmail address.");
+                return false;
+            }
+            return true;
+        }
+    </script>
 </head>
 <body>
     <div class="limiter">
         <div class="container-login100">
             <div class="wrap-login100 p-l-55 p-r-55 p-t-65 p-b-54">
-                <form class="login100-form validate-form" action="sign_up.php" method="POST">
+                <form name="signupForm" class="login100-form validate-form" action="sign_up.php" method="POST" onsubmit="return validateForm()">
                     <span class="login100-form-title p-b-49">Sign Up</span>
+                    
                     <div class="wrap-input100 validate-input m-b-23" data-validate="Username is required">
                         <span class="label-input100">Username</span>
                         <input class="input100" type="text" name="username" placeholder="Type your username">
                         <span class="focus-input100"></span>
                     </div>
+                    
                     <div class="wrap-input100 validate-input" data-validate="Password is required">
                         <span class="label-input100">Password</span>
                         <input class="input100" type="password" name="password" placeholder="Type your password">
                         <span class="focus-input100"></span>
                     </div>
+                    
+                    <div class="wrap-input100 validate-input" data-validate="Email is required">
+                        <span class="label-input100">Email</span>
+                        <input class="input100" type="text" name="email" placeholder="Type your Email">
+                        <span class="focus-input100"></span>
+                    </div>
+                    
                     <div class="wrap-input100 validate-input" data-validate="No HP is required">
-                        <div><span class="label-input100"></span> </div>
                         <span class="label-input100">No HP</span>
                         <input class="input100" type="text" name="noHP" placeholder="Type your No HP">
                         <span class="focus-input100"></span>
                     </div>
+                    
                     <div class="text-right p-t-8 p-b-31"></div>
+                    
                     <div class="container-login100-form-btn">
                         <div class="wrap-login100-form-btn">
                             <div class="login100-form-bgbtn"></div>
