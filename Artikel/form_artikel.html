@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="../Dashboard/style.css">
+</head>
+<body>
+    <nav>
+        <div class="wrapper">
+            <div class="logo"><a href='../Dashboard/DashboardAdmin.html'>HALO PETANI</a></div>
+            <div class="menu">
+                <ul>
+                    <li><a href="../Dashboard/DashboardAdmin.html" class="tbl-biru">Beranda</a></li>
+                    <li><a href="#pertanyaan" class="tbl-biru">Pertanyaan</a></li>
+                    <li><a href="../Artikel/form_artikel.html" class="tbl-biru">Artikel</a></li>
+                    <li><a href="#laporan" class="tbl-biru">Laporan</a></li>
+                    <li><a href="../Login.html" class="tbl-biru">Log Out</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="wrapper">
+        <!-- Form untuk Tambah Artikel -->
+        <section id="form-tambah-artikel">
+            <div class="container">
+                <h2>Tambah Artikel</h2>
+                <form action="submit_artikel.php" method="post">
+                    <div class="kolom">
+                        <label for="judul">Judul:</label>
+                        <input type="text" id="judul" name="judul" required><br>
+                        
+                        <label for="konten">Konten:</label>
+                        <textarea id="konten" name="konten" required></textarea><br>
+                        
+                        <label for="kategori">Kategori:</label>
+                        <input type="text" id="kategori" name="kategori" required><br>
+                        
+                        <label for="rating">Rating:</label>
+                        <input type="number" id="rating" name="rating" min="1" max="5" required><br>
+                        
+                        <input type="hidden" id="id_admin" name="id_admin" value="1"><!-- sesuaikan dengan id_admin yang sesuai -->
+                        
+                        <input type="submit" value="Tambahkan Artikel">
+                    </div>
+                </form>
+            </div>
+        </section>
+    </div>
+    
+
+    <footer id="kontak">
+        <div class="wrapper">
+            <div class="footer-container">
+                <div class="footer-section">
+                    <h3>Halo Petani</h3>
+                    <p>Menyediakan layanan konsultasi berbayar selama 1 bulan</p>
+                </div>
+                <div class="footer-section">
+                    <h3>About</h3>
+                    <p>Website resmi yang menyediakan layanan untuk kepentingan petani</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p>Telp: 000000000101</p>
+                    <p>Jl. Badak dan kaki tiga</p>
+                    <p>Kode Pos: 666</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Social</h3>
+                    <p><b>YouTube:</b> Hallo Petani</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <footer id="copyright">
+        <div class="wrapper">
+            &copy; 2024. <b>Halo Petani</b> All Rights Reserved.
+        </div>
+    </footer>
+</body>
+</html>

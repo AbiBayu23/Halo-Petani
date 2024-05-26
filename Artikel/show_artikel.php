@@ -4,38 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../Dashboard/style.css">
 </head>
 <body>
     <nav>
         <div class="wrapper">
-            <div class="logo"><a href='DashboardAdmin.html'>HALO PETANI</a></div>
+            <div class="logo"><a href='../Dashboard/DashboardAdmin.html'>HALO PETANI</a></div>
             <div class="menu">
                 <ul>
-                    <li><a href="DashboardAdmin.html" class="tbl-biru">Beranda</a></li>
+                    <li><a href="../Dashboard/DashboardAdmin.html" class="tbl-biru">Beranda</a></li>
                     <li><a href="#pertanyaan" class="tbl-biru">Pertanyaan</a></li>
-                    <li><a href="../Artikel/show_artikel.php" class="tbl-biru">Artikel</a></li>
-                    <li><a href="#artikel" class="tbl-biru">Laporan</a></li>
+                    <li><a href="show_artikel.php" class="tbl-biru">Artikel</a></li>
+                    <li><a href="#laporan" class="tbl-biru">Laporan</a></li>
                     <li><a href="../Login.html" class="tbl-biru">Log Out</a></li>
                 </ul>
             </div>
         </div>
     </nav>
     <div class="wrapper">
-        <!-- untuk home -->
-        <section id="beranda">
-            <img src="petani.jpg"/>
-            <div class="kolom">
-                <p class="deskripsi">Belajar Tanaman dari Rumah</p>
-                <h2>Hidup Sehat dengan Berkebun</h2>
-                <p>Hallo Petani adalah aplikasi inovatif yang dirancang khusus untuk memberikan pengetahuan dan informasi terkini mengenai dunia pertanian. Kami memahami betapa pentingnya pengetahuan dalam meningkatkan hasil dan kualitas pertanian. Oleh karena itu, melalui aplikasi ini, kami hadir untuk mendukung para petani dengan berbagai fitur edukatif yang bermanfaat. 
-                Dengan fitur komunitas, petani dapat berinteraksi, berbagi pengalaman, dan saling memberikan dukungan. Tujuan kami adalah menciptakan ekosistem yang mendukung petani dalam mengoptimalkan hasil pertanian mereka dan meningkatkan kesejahteraan mereka secara keseluruhan.
-                </p>
-                <p><a href="" class="tbl-pink">Pelajari Lebih Lanjut</a></p>
+    <h1>Artikel Halo Petani</h1>
+    <div>
+    <div class="wrapper">
+    <a href="form_artikel.html" class="tbl-pink">Tambah Artikel Baru</a>
+    <div>
+
+    <div class="wrapper">
+        <!-- Form untuk Tambah Artikel -->
+        <section id="form-tambah-artikel">
+            <div class="container">
+                <li><a href="urutan_artikel.php">Artikel Terbaru</a></li>
+                <li><a href="top_rating_artikel.php">Artikel Berdasarkan Rating</a></li> 
             </div>
         </section>
+    </div>
 
-        <footer id="kontak">
+    <section>
+        
+    </section>
+
+    <footer id="kontak">
         <div class="wrapper">
             <div class="footer-container">
                 <div class="footer-section">
@@ -48,7 +55,7 @@
                 </div>
                 <div class="footer-section">
                     <h3>Contact</h3>
-                    <p>Telp : 000000000101</p>
+                    <p>Telp: 000000000101</p>
                     <p>Jl. Badak dan kaki tiga</p>
                     <p>Kode Pos: 666</p>
                 </div>
@@ -58,14 +65,12 @@
                 </div>
             </div>
         </div>
-        </footer>
-    </div>
-    
+    </footer>
+
     <footer id="copyright">
         <div class="wrapper">
             &copy; 2024. <b>Halo Petani</b> All Rights Reserved.
         </div>
     </footer>
-    
 </body>
 </html>

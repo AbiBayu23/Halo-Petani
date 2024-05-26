@@ -70,6 +70,14 @@ CREATE TABLE rating_jawaban (
     tanggal_rating DATE NOT NULL,
     FOREIGN KEY (id_jawaban) REFERENCES jawaban(id_jawaban),
     FOREIGN KEY (id_pengguna) REFERENCES pengguna(id));
+CREATE TABLE Like_button (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  question_id INT NOT NULL,
+  content TEXT NOT NULL,
+  likes INT DEFAULT 0,
+  user_id INT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);
 create table quality_point(
     id_quality_point int not null primary key auto_increment,
     id_pengguna int,

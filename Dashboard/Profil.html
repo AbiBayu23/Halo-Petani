@@ -3,65 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HALLO PETANI</title>
+    <title>HALO PETANI</title>
     <link rel="stylesheet" href="style.css">
+    <script>
+        // Fetch data from PHP script
+        fetch('profil.php')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('username').innerText = data.name;
+                document.getElementById('email').innerText = data.email;
+                document.getElementById('noHP').innerText = data.phone_number;
+                document.getElementById('tanggal_daftar').innerText = data.date_registered;
+            })
+            .catch(error => console.error('Error fetching data: ', error));
+    </script>
 </head>
 <body>
     <nav>
         <div class="wrapper">
-            <div class="logo"><a href='DashboardUser.html'>HALLO PETANI</a></div>
+            <div class="logo"><a href='DashboardUser.html'>HALO PETANI</a></div>
             <div class="menu">
                 <ul>
                     <li><a href="DashboardUser.html" class="tbl-biru">Beranda</a></li>
-                    <li><a href="Profil.html" class="tbl-biru">Profil</a></li>
+                    <li><a href="profil.html" class="tbl-biru">Profil</a></li>
                     <li><a href="#pertanyaan" class="tbl-biru">Pertanyaan</a></li>
                     <li><a href="#artikel" class="tbl-biru">Artikel</a></li>
-                    <li><a href="Login.html" class="tbl-biru">Log Out</a></li>
+                    <li><a href="../Login.html" class="tbl-biru">Log Out</a></li>
                 </ul>
             </div>
         </div>
     </nav>
-<!-- untuk profil -->
-<div class="wrapper">
-    <section id="profil">
-        <img src="petani2-removebg-preview.png"/>
-        <div class="kolom">
-            <p class="deskripsi">Profil Anda</p>
-            <div class="profil-info">
-                <p><strong>Nama:</strong></p>
-                <p><strong>Email:</strong></p>
-                <p><strong>No HP:</strong></p>
-            </div>
-        </div>
-    </section>
-    <footer id="kontak">
-        <div class="wrapper">
-            <div class="footer-container">
-                <div class="footer-section">
-                    <h3>Hallo Petani</h3>
-                    <p>Menyediakan layanan konsultasi berbayar selama 1 bulan</p>
-                </div>
-                <div class="footer-section">
-                    <h3>About</h3>
-                    <p>Website resmi yang menyediakan layanan untuk kepentingan petani</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Contact</h3>
-                    <p>Telp : 000000000101</p>
-                    <p>Jl. Badak dan kaki tiga</p>
-                    <p>Kode Pos: 666</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Social</h3>
-                    <p><b>YouTube:</b> Hallo Petani</p>
-                </div>
-            </div>
-        </div>
-    </footer>
 
-    <footer id="copyright">
-        <div class="wrapper">
-            &copy; 2024. <b>Hallo Petani</b> All Rights Reserved.
-        </div>
-    </footer>
-</div>
+    <!-- untuk profil -->
+    <div class="wrapper">
+        <section id="profil">
+            <img src="petani2-removebg-preview.png"/>
+            <div class="kolom">
+                <p class="deskripsi">Profil Anda</p>
+                <div class="profil-info">
+                    <p><strong>Nama:</strong> <span id="username"></span></p>
+                    <p><strong>Email:</strong> <span id="email"></span></p>
+                    <p><strong>No HP:</strong> <span id="noHP"></span></p>
+                    <p><strong>Tanggal Daftar:</strong> <span id="tanggal_daftar"></span></p>
+                </div>
+            </div>
+        </section>
+
+        <footer id="kontak">
+            <div class="wrapper">
+                <div class="footer-container">
+                    <div class="footer-section">
+                        <h3>Halo Petani</h3>
+                        <p>Menyediakan layanan konsultasi berbayar selama 1 bulan</p>
+                    </div>
+                    <div class="footer-section">
+                        <h3>About</h3>
+                        <p>Website resmi yang menyediakan layanan untuk kepentingan petani</p>
+                    </div>
+                    <div class="footer-section">
+                        <h3>Contact</h3>
+                        <p>Telp : 000000000101</p>
+                        <p>Jl. Badak dan kaki tiga</p>
+                        <p>Kode Pos: 666</p>
+                    </div>
+                    <div class="footer-section">
+                        <h3>Social</h3>
+                        <p><b>YouTube:</b> Hallo Petani</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <footer id="copyright">
+            <div class="wrapper">
+                &copy; 2024. <b>Halo Petani</b> All Rights Reserved.
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

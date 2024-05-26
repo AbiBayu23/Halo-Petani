@@ -30,7 +30,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Verifikasi password
         if (password_verify($password, $hashed_password)) {
-            header("Location: DashboardUser.html");
+            session_start();
+                $_SESSION['user_id'] = $id;
+                $_SESSION['username'] = $username;
+            header("Location: ./Dashboard/DashboardUser.html");
             exit();
         } else {
             echo "Invalid password.";
@@ -43,4 +46,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 $conn->close();
-?>
+?> 
