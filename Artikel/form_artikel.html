@@ -1,0 +1,25 @@
+<form action="submit_artikel.php" method="post">
+    <label for="judul">Judul:</label>
+    <input type="text" id="judul" name="judul" required><br>
+
+    <label for="konten">Konten:</label>
+    <textarea id="konten" name="konten" required></textarea><br>
+
+    <label for="kategori">Kategori:</label>
+    <input type="text" id="kategori" name="kategori" required><br>
+
+    <label for="rating">Rating:</label>
+         
+         <div>
+         <input type="number" id="rating" name="rating" min="1" max="5" required> <hr>
+         <div>
+
+    <input type="hidden" id="id_admin" name="id_admin" value="1"><!-- sesuaikan dengan id_admin yang sesuai -->
+    
+    <div>
+   
+    <input type="submit" value="Tambahkan Artikel">
+    
+    </div>
+   
+</form>
