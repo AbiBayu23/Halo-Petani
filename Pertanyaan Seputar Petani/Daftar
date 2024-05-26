@@ -1,5 +1,7 @@
 <?php
-include 'config.php';
+include 'config';
+
+$laporanPesan = "";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['id_pertanyaan']) && isset($_POST['isi_jawaban']) && isset($_POST['id_pengguna'])) {
@@ -58,8 +60,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $id_jawaban = $_POST['id_jawaban'];
         $id_pengguna = $_POST['id_pengguna'];
 
-        $sql_check_quality = "SELECT * FROM quality_point WHERE id_jawaban = '$id_jawaban' AND id_pengguna = '$id_pengguna'";
-        $result_check_quality = $conn->query($sql_check_quality);
+        $sql_check_quality = "SELECT * FROM quality_point WHERE id_jawaban = ? AND id_pengguna = ?";
+        $stmt_check_quality = $conn->prepare($sql_check_quality);
+        $stmt_check_quality->bind_param("ii", $id_jawaban, $id_pengguna);
+        $stmt_check_quality->execute();
+        $result_check_quality = $stmt_check_quality->get_result();
 
         if ($result_check_quality->num_rows == 0) {
             $stmt_quality = $conn->prepare("INSERT INTO quality_point (id_pengguna, id_jawaban, jumlah_point, tanggal_pemberian) VALUES (?, ?, 2, CURDATE())");
@@ -74,18 +79,54 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } else {
             echo "Anda sudah memberikan like pada jawaban ini.";
         }
+
+        $stmt_check_quality->close();
     }
 
     if (isset($_POST['unlike']) && isset($_POST['id_jawaban']) && isset($_POST['id_pengguna'])) {
         $id_jawaban = $_POST['id_jawaban'];
         $id_pengguna = $_POST['id_pengguna'];
 
-        $sql_delete_quality = "DELETE FROM quality_point WHERE id_jawaban = '$id_jawaban' AND id_pengguna = '$id_pengguna'";
-        if ($conn->query($sql_delete_quality) === TRUE) {
+        $stmt_delete_quality = $conn->prepare("DELETE FROM quality_point WHERE id_jawaban = ? AND id_pengguna = ?");
+        $stmt_delete_quality->bind_param("ii", $id_jawaban, $id_pengguna);
+
+        if ($stmt_delete_quality->execute()) {
             echo "Unlike berhasil!";
         } else {
-            echo "Error: " . $conn->error;
+            echo "Error: " . $stmt_delete_quality->error;
         }
+
+        $stmt_delete_quality->close();
+    }
+
+    if (isset($_POST['id_pengguna']) && isset($_POST['alasan_laporan'])) {
+        $id_pengguna = $_POST['id_pengguna'];
+        $id_pertanyaan = isset($_POST['id_pertanyaan']) ? $_POST['id_pertanyaan'] : NULL;
+        $id_jawaban = isset($_POST['id_jawaban']) ? $_POST['id_jawaban'] : NULL;
+        $alasan_laporan = $_POST['alasan_laporan'];
+
+        $stmt = $conn->prepare("INSERT INTO laporan (id_pengguna, id_pertanyaan, id_jawaban, alasan_laporan, tanggal_laporan) VALUES (?, ?, ?, ?, CURDATE())");
+        $stmt->bind_param("iiis", $id_pengguna, $id_pertanyaan, $id_jawaban, $alasan_laporan);
+        $sql_jawaban = "SELECT j.*, p.username FROM jawaban j INNER JOIN pengguna p ON j.id_pengguna = p.id WHERE id_pertanyaan = " . $pertanyaan["id_pertanyaan"];
+        $result_jawaban = $conn->query($sql_jawaban);
+
+        if ($result_jawaban->num_rows > 0) {
+            while ($jawaban = $result_jawaban->fetch_assoc()) {
+                echo "<div class='jawaban'>";
+                echo "<strong>Jawaban:</strong> " . htmlspecialchars($jawaban["isi_jawaban"]) . "<br>";
+                echo "<strong>Dikirim oleh:</strong> " . htmlspecialchars($jawaban["username"]) . "<br>";
+                // Sisipkan kode HTML atau CSS untuk tampilan jawaban dan informasi pengguna
+                echo "</div>";
+            }
+        }
+        
+
+        if ($stmt->execute()) {
+            $laporanPesan = "Laporan berhasil dikirim!";
+        } else {
+            $laporanPesan = "Error: " . $stmt->error;
+        }
+        $stmt->close();
     }
 }
 
@@ -95,169 +136,272 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Daftar Pertanyaan</title>
+    <title>Pertanyaan Seputar Petani</title>
     <style>
-        .jawaban {
-            margin-bottom: 20px;
-        }
-        .rating {
-            direction: rtl;
-            unicode-bidi: bidi-override;
-            font-size: 1.5em;
-            display: inline-block;
-        }
-        .rating input {
-            display: none;
-        }
-        .rating label {
-            color: #ddd;
-            float:
-            right;
-        }
-        .rating input:checked ~ label,
-        .rating input:checked ~ label ~ label {
-            color: #f5b301;
-        }
-        .rating label:hover,
-        .rating label:hover ~ label {
-            color: #ffdd44;
-        }
-        .result-rating {
-            color: #f5b301;
-            font-size: 1.5em;
-        }
-        .result-rating .star {
-            color: #ddd;
-        }
-        .result-rating .filled {
-            color: #f5b301;
-        }
-        .like-button {
-            background-color: #008CBA;
-            color: white;
-            padding: 5px 10px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .like-count {
-            font-size: 1.2em;
-            color: #008CBA;
-        }
-        .unlike-button {
-            background-color: #f44336;
-            color: white;
-            padding: 5px 10px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+        body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    }
+.container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    margin-top: 20px;
+}
+
+h1 {
+    color: #6b8e23; /* Warna hijau yang mengingatkan pada tanaman */
+    text-align: center;
+    font-family: 'Georgia', serif;
+}
+
+.pertanyaan, .jawaban {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+    background-color: #fafafa;
+}
+
+.pertanyaan {
+    background-color: #f0fff0; /* Latar belakang hijau terang */
+}
+
+.jawaban {
+    background-color: #f9f9f9;
+}
+
+strong {
+    color: #2e8b57; /* Warna hijau */
+}
+
+.image {
+    max-width: 200px;
+    max-height: 200px;
+    display: block;
+    margin: 10px 0;
+}
+
+.rating {
+    direction: rtl;
+    unicode-bidi: bidi-override;
+    font-size: 1.5em;
+    display: inline-block;
+}
+
+.rating input {
+    display: none;
+}
+
+.rating label {
+    color: #ddd;
+    float: right;
+}
+
+.rating input:checked ~ label,
+.rating input:checked ~ label ~ label {
+    color: #f5b301;
+}
+
+.rating label:hover,
+.rating label:hover ~ label {
+    color: #ffdd44;
+}
+
+.result-rating {
+    color: #f5b301;
+    font-size: 1.5em;
+}
+
+.result-rating .star {
+    color: #ddd;
+}
+
+.result-rating .filled {
+    color: #f5b301;
+}
+.like-button, .unlike-button {
+        background-color: #6b8e23; /* Hijau yang lebih gelap */
+        color: white;
+        padding: 5px 8px; /* Atur padding agar tombol tidak terlalu besar */
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 12px; /* Atur ukuran font agar sesuai */
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 50px; /* Atur lebar tombol */
+        height: 30px; /* Atur tinggi tombol */
+    }
+
+    .unlike-button::after {
+        content: "\1F447"; /* Unicode untuk ikon jempol ke bawah */
+        margin-left: 5px; /* Atur jarak antara tombol dan ikon */
+    }
+textarea {
+    width: 100%;
+    height: 100px;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+    font-family: 'Arial', sans-serif;
+}
+
+input[type="submit"] {
+    background-color: #6b8e23; /* Hijau yang lebih gelap */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #6b8e23; /* Hijau yang lebih gelap */
+    color: white;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
     </style>
+    <script>
+        function tampilkanFormLaporan(id) {
+            const formLaporan = document.getElementById('form-laporan-' + id);
+            if (formLaporan.style.display === 'none') {
+                formLaporan.style.display = 'block';
+            } else {
+                formLaporan.style.display = 'none';
+            }
+        }
+    </script>
 </head>
 <body>
 
-<?php
-function display_stars($rating) {
-    $stars = "";
-    for ($i = 1; $i <= 5; $i++) {
-        if ($i <= $rating) {
-            $stars .= "<span class='star filled'>★</span>";
-        } else {
-            $stars .= "<span class='star'>★</span>";
+    <form action ="" method="post" enctype="multipart/form-data"></form>    
+    <div class="container">
+        <h1>Pertanyaan Seputar Petani</h1>
+
+        <?php
+        if (!empty($laporanPesan)) {
+            echo "<script>alert('" . addslashes($laporanPesan) . "');</script>";
         }
-    }
-    return $stars;
-}
 
-if ($result_pertanyaan->num_rows > 0) {
-    while ($pertanyaan = $result_pertanyaan->fetch_assoc()) {
-        echo "<strong>Judul Pertanyaan:</strong> " . htmlspecialchars($pertanyaan["judul_pertanyaan"]) . "<br>";
-        echo "<strong>Isi Pertanyaan:</strong> " . htmlspecialchars($pertanyaan["isi_pertanyaan"]) . "<br>";
+        function display_stars($rating) {
+            $stars = "";
+            for ($i = 1; $i <= 5; $i++) {
+                if ($i <= $rating) {
+                    $stars .= "<span class='star filled'>★</span>";
+                } else {
+                    $stars .= "<span class='star'>★</span>";
+                }
+            }
+            return $stars;
+        }
 
-        $id_pertanyaan = $pertanyaan["id_pertanyaan"];
-        $sql_jawaban = "SELECT * FROM jawaban WHERE id_pertanyaan = '$id_pertanyaan' ORDER BY tanggal_posting DESC";
-        $result_jawaban = $conn->query($sql_jawaban);
+        if ($result_pertanyaan->num_rows > 0) {
+            while ($pertanyaan = $result_pertanyaan->fetch_assoc()) {
+                echo "<div class='pertanyaan'>";
+                echo "<strong>Pertanyaan:</strong> " . htmlspecialchars($pertanyaan["isi_pertanyaan"]) . "<br>";
+                echo "<strong>Tanggal:</strong> " . htmlspecialchars($pertanyaan["tanggal_posting"]) . "<br>";
 
-        if ($result_jawaban->num_rows > 0) {
-            while ($jawaban = $result_jawaban->fetch_assoc()) {
-                echo "<div class='jawaban'>";
-                echo "<strong>Jawaban:</strong> " . htmlspecialchars($jawaban["isi_jawaban"]) . "<br>";
-                echo "<strong>Tanggal Jawaban:</strong> " . htmlspecialchars($jawaban["tanggal_posting"]) . "<br>";
+                if (!empty($pertanyaan["foto"])) {
+                    $foto_base64 = base64_encode($pertanyaan["foto"]);
+                    echo "<strong>Foto:</strong><br><img src='data:image/jpeg;base64,{$foto_base64}' alt='Foto Pertanyaan' class='image'><br>";
+                }
 
-                $id_jawaban = $jawaban["id_jawaban"];
-                $sql_rating = "SELECT AVG(nilai) as rata_rata, COUNT(nilai) as total_rating FROM rating_jawaban WHERE id_jawaban = '$id_jawaban'";
-                $result_rating = $conn->query($sql_rating);
-                $row_rating = $result_rating->fetch_assoc();
-                $rata_rata = $row_rating['rata_rata'] ? round($row_rating['rata_rata'], 2) : 0;
-                $total_rating = $row_rating['total_rating'] ? $row_rating['total_rating'] : 0;
-                echo "<strong>Rata-rata Rating:</strong> <span class='result-rating'>" . display_stars($rata_rata) . " (" . $rata_rata . ")</span><br>";
-                echo "<strong>Total Rating:</strong> " . $total_rating . " orang<br>";
+                $sql_jawaban = "SELECT * FROM jawaban WHERE id_pertanyaan = " . $pertanyaan["id_pertanyaan"];
+                $result_jawaban = $conn->query($sql_jawaban);
 
-                $sql_like = "SELECT SUM(jumlah_point) as total_likes FROM quality_point WHERE id_jawaban = '$id_jawaban'";
-                $result_like = $conn->query($sql_like);
-                $row_like = $result_like->fetch_assoc();
-                $total_likes = $row_like['total_likes'] ? $row_like['total_likes'] / 2 : 0;
+                if ($result_jawaban->num_rows > 0) {
+                    while ($jawaban = $result_jawaban->fetch_assoc()) {
+                        echo "<div class='jawaban'>";
+                        echo "<strong>Jawaban:</strong> " . htmlspecialchars($jawaban["isi_jawaban"]) . "<br>";
 
-                echo "<strong>Total Likes:</strong> <span class='like-count'>" . intval($total_likes) . "</span><br>";
+                        $sql_avg_rating = "SELECT AVG(nilai) as average_rating FROM rating_jawaban WHERE id_jawaban = " . $jawaban["id_jawaban"];
+                        $result_avg_rating = $conn->query($sql_avg_rating);
 
-                echo "<form method='POST' action=''>
-                        <input type='hidden' name='id_jawaban' value='" . htmlspecialchars($jawaban["id_jawaban"]) . "'>
-                        <input type='hidden' name='id_pengguna' value='1'> <!-- Ganti dengan id_pengguna yang valid -->
-                        <div class='rating'>
-                            <input type='radio' id='star5-" . htmlspecialchars($jawaban["id_jawaban"]) . "' name='nilai' value='5'><label for='star5-" . htmlspecialchars($jawaban["id_jawaban"]) . "'>★</label>
-                            <input type='radio' id='star4-" . htmlspecialchars($jawaban["id_jawaban"]) . "' name='nilai' value='4'><label for='star4-" . htmlspecialchars($jawaban["id_jawaban"]) . "'>★</label>
-                            <input type='radio' id='star3-" . htmlspecialchars($jawaban["id_jawaban"]) . "' name='nilai' value='3'><label for='star3-" . htmlspecialchars($jawaban["id_jawaban"]) . "'>★</label>
-                            <input type='radio' id='star2-" . htmlspecialchars($jawaban["id_jawaban"]) . "' name='nilai' value='2'><label for='star2-" . htmlspecialchars($jawaban["id_jawaban"]) . "'>★</label>
-                            <input type='radio' id='star1-" . htmlspecialchars($jawaban["id_jawaban"]) . "' name='nilai' value='1'><label for='star1-" . htmlspecialchars($jawaban["id_jawaban"]) . "'>★</label>
-                        </div>
-                        <button type='submit'>Beri Rating</button>
-                      </form>";
+                        if ($result_avg_rating->num_rows > 0) {
+                            $row_avg_rating = $result_avg_rating->fetch_assoc();
+                            $average_rating = $row_avg_rating['average_rating'];
+                            echo "<div class='result-rating'>" . display_stars(round($average_rating)) . " (" . round($average_rating, 2) . ")</div>";
+                        }
 
-                echo "<form method='POST' action=''>
-                        <input type='hidden' name='id_jawaban' value='" . htmlspecialchars($jawaban["id_jawaban"]) . "'>
-                        <input type='hidden' name='id_pengguna' value='1'> <!-- Ganti dengan id_pengguna yang valid -->
-                        <input type='hidden' name='like' value='1'>
-                        <button type='submit' class='like-button'>Like</button>
-                      </form>";
+                        $sql_quality_point = "SELECT COUNT(*) as likes FROM quality_point WHERE id_jawaban = " . $jawaban["id_jawaban"];
+                        $result_quality_point = $conn->query($sql_quality_point);
+                        $likes = 0;
+                        if ($result_quality_point->num_rows > 0) {
+                            $row_quality_point = $result_quality_point->fetch_assoc();
+                            $likes = $row_quality_point['likes'];
+                        }
 
-                echo "<form method='POST' action=''>
-                        <input type='hidden' name='id_jawaban' value='" . htmlspecialchars($jawaban["id_jawaban"]) . "'>
-                        <input type='hidden' name='id_pengguna' value='1'> <!-- Ganti dengan id_pengguna yang valid -->
-                        <input type='hidden' name='unlike' value='1'>
-                        <button type='submit
-                        ' class='unlike-button'>Unlike</button>
-                        </form>";
-  
-                  echo "</div>";
-              }
-          } else {
-              echo "Belum ada jawaban untuk pertanyaan ini.<br>";
-          }
-  
-          echo "<form method='POST' action=''>
-                  <input type='hidden' name='id_pertanyaan' value='" . htmlspecialchars($pertanyaan["id_pertanyaan"]) . "'>
-                  <input type='hidden' name='id_pengguna' value='1'> <!-- Ganti dengan id_pengguna yang valid -->
-                  Jawaban: <textarea name='isi_jawaban' required></textarea><br>
-                  <button type='submit'>Kirim Jawaban</button>
-                </form>";
-  
-          echo "<hr>";
-      }
-  } else {
-      echo "Belum ada pertanyaan yang diposting.";
-  }
-  
-  $conn->close();
-  ?>
-  
-  </body>
-  </html>
-  
+                        echo "<form method='POST' action='daftar_pertanyaan.php'>";
+                        echo "<input type='hidden' name='id_jawaban' value='" . $jawaban["id_jawaban"] . "'>";
+                        echo "<input type='hidden' name='id_pengguna' value='1'>";
+                        echo "<input type='submit' name='like' class='thumb-up' value='&#128077;'>";
+                        echo "<input type='submit' name='unlike' class='thumb-down' value='&#128078;&#8416;'>";
+                        echo "<span class='like-count'>Likes: $likes</span>";
+                        echo "</form>";
+
+                        echo "<form method='POST' action='daftar_pertanyaan.php'>";
+                        echo "<input type='hidden' name='id_jawaban' value='" . $jawaban["id_jawaban"] . "'>";
+                        echo "<input type='hidden' name='id_pengguna' value='1'>";
+                        echo "<div class='rating'>";
+                        echo "<input type='radio' id='star5-" . $jawaban["id_jawaban"] . "' name='nilai' value='5'><label for='star5-" . $jawaban["id_jawaban"] . "'>★</label>";
+                        echo "<input type='radio' id='star4-" . $jawaban["id_jawaban"] . "' name='nilai' value='4'><label for='star4-" . $jawaban["id_jawaban"] . "'>★</label>";
+                        echo "<input type='radio' id='star3-" . $jawaban["id_jawaban"] . "' name='nilai' value='3'><label for='star3-" . $jawaban["id_jawaban"] . "'>★</label>";
+                        echo "<input type='radio' id='star2-" . $jawaban["id_jawaban"] . "' name='nilai' value='2'><label for='star2-" . $jawaban["id_jawaban"] . "'>★</label>";
+                        echo "<input type='radio' id='star1-" . $jawaban["id_jawaban"] . "' name='nilai' value='1'><label for='star1-" . $jawaban["id_jawaban"] . "'>★</label>";
+                        echo "</div>";
+                        echo "<input type='submit' value='Rate'>";
+                        echo "</form>";
+
+                        echo "<button onclick='tampilkanFormLaporan(\"jawaban-" . $jawaban["id_jawaban"] . "\")'>Laporkan</button>";
+                        echo "<form method='POST' action='daftar_pertanyaan.php' id='form-laporan-jawaban-" . $jawaban["id_jawaban"] . "' style='display:none;'>";
+                        echo "<input type='hidden' name='id_pengguna' value='1'>";
+                        echo "<input type='hidden' name='id_jawaban' value='" . $jawaban["id_jawaban"] . "'>";
+                        echo "<textarea name='alasan_laporan' placeholder='Alasan laporan...' required></textarea><br>";
+                        echo "<input type='submit' value='Kirim Laporan'>";
+                        echo "</form>";
+
+                        echo "</div>";
+                    }
+                }
+
+                echo "<form method='POST' action='daftar_pertanyaan.php'>";
+                echo "<input type='hidden' name='id_pertanyaan' value='" . $pertanyaan["id_pertanyaan"] . "'>";
+                echo "<input type='hidden' name='id_pengguna' value='1'>";
+                echo "<textarea name='isi_jawaban' placeholder='Masukkan jawaban Anda...' required></textarea><br>";
+                echo "<input type='submit' value='Kirim Jawaban'>";
+                echo "</form>";
+
+                echo "<button onclick='tampilkanFormLaporan(\"pertanyaan-" . $pertanyaan["id_pertanyaan"] . "\")'>Laporkan</button>";
+                echo "<form method='POST' action='daftar_pertanyaan.php' id='form-laporan-pertanyaan-" . $pertanyaan["id_pertanyaan"] . "' style='display:none;'>";
+                echo "<input type='hidden' name='id_pengguna' value='1'>";
+                echo "<input type='hidden' name='id_pertanyaan' value='" . $pertanyaan["id_pertanyaan"] . "'>";
+                echo "<textarea name='alasan_laporan' placeholder='Alasan laporan...' required></textarea><br>";
+                echo "<input type='submit' value='Kirim Laporan'>";
+                echo "</form>";
+
+                echo "</div>";
+            }
+        } else {
+            echo "Tidak ada pertanyaan yang ditemukan.";
+        }
+        ?>
+    </div>
+
+</body>
+</html>
+
