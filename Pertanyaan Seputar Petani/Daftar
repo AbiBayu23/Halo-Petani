@@ -1,8 +1,8 @@
 <?php
-include 'config';
+include 'config.php';
 
 $laporanPesan = "";
-
+$whereClause = "";
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['id_pertanyaan']) && isset($_POST['isi_jawaban']) && isset($_POST['id_pengguna'])) {
         $id_pertanyaan = $_POST['id_pertanyaan'];
@@ -19,6 +19,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         $stmt->close();
     }
+    $kategori = $_GET['kategori'] ?? '';
+    $keyword = $_GET['keyword'] ?? '';
+    
+    if (!empty($kategori)) {
+        $whereClause .= " AND kategori = '$kategori'";
+    }
+    
+    if (!empty($keyword)) {
+        $whereClause .= " AND (isi_pertanyaan LIKE '%$keyword%' OR isi_jawaban LIKE '%$keyword%')";
+    }
+    $sql_pertanyaan = "SELECT pertanyaan.*, pengguna.username FROM pertanyaan JOIN pengguna ON pertanyaan.id_pengguna = pengguna.id WHERE 1 $whereClause ORDER BY pertanyaan.tanggal_posting DESC";
+    
+
+  }
+$sql_pertanyaan = "SELECT pertanyaan.*, pengguna.username FROM pertanyaan JOIN pengguna ON pertanyaan.id_pengguna = pengguna.id WHERE 1 $whereClause ORDER BY pertanyaan.tanggal_posting DESC";
+    $result_pertanyaan = $conn->query($sql_pertanyaan);
+    
+    if ($result_pertanyaan->num_rows > 0) {
+        while ($pertanyaan = $result_pertanyaan->fetch_assoc()) {
+            // Tampilkan pertanyaan
+        }
+    } else {
+        echo "Tidak ada pertanyaan yang ditemukan.";
+    }
+    
+$sql_pertanyaan = "SELECT pertanyaan.*, pengguna.username FROM pertanyaan JOIN pengguna ON pertanyaan.id_pengguna = pengguna.id WHERE 1 $whereClause ORDER BY tanggal_posting DESC";
+$result_pertanyaan = $conn->query($sql_pertanyaan);
 
     if (isset($_POST['id_jawaban']) && isset($_POST['nilai']) && isset($_POST['id_pengguna'])) {
         $id_jawaban = $_POST['id_jawaban'];
@@ -107,29 +134,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         $stmt = $conn->prepare("INSERT INTO laporan (id_pengguna, id_pertanyaan, id_jawaban, alasan_laporan, tanggal_laporan) VALUES (?, ?, ?, ?, CURDATE())");
         $stmt->bind_param("iiis", $id_pengguna, $id_pertanyaan, $id_jawaban, $alasan_laporan);
-        $sql_jawaban = "SELECT j.*, p.username FROM jawaban j INNER JOIN pengguna p ON j.id_pengguna = p.id WHERE id_pertanyaan = " . $pertanyaan["id_pertanyaan"];
-        $result_jawaban = $conn->query($sql_jawaban);
-
-        if ($result_jawaban->num_rows > 0) {
-            while ($jawaban = $result_jawaban->fetch_assoc()) {
-                echo "<div class='jawaban'>";
-                echo "<strong>Jawaban:</strong> " . htmlspecialchars($jawaban["isi_jawaban"]) . "<br>";
-                echo "<strong>Dikirim oleh:</strong> " . htmlspecialchars($jawaban["username"]) . "<br>";
-                echo "</div>";
-            }
-        }
-        
-
-        if ($stmt->execute()) {
-            $laporanPesan = "Laporan berhasil dikirim!";
-        } else {
-            $laporanPesan = "Error: " . $stmt->error;
-        }
+        $stmt->execute();
         $stmt->close();
-    }
-}
 
-$sql_pertanyaan = "SELECT * FROM pertanyaan ORDER BY tanggal_posting DESC";
+        $laporanPesan = "Laporan berhasil dikirim!";
+    }
+
+
+$sql_pertanyaan = "SELECT pertanyaan.*, pengguna.username FROM pertanyaan JOIN pengguna ON pertanyaan.id_pengguna = pengguna.id ORDER BY tanggal_posting DESC";
 $result_pertanyaan = $conn->query($sql_pertanyaan);
 ?>
 <!DOCTYPE html>
@@ -138,142 +150,147 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
     <title>Pertanyaan Seputar Petani</title>
     <style>
         body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f4f4f9;
-    color: #333;
-    margin: 0;
-    padding: 0;
-    }
-.container {
-    width: 80%;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    margin-top: 20px;
-}
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
 
-h1 {
-    color: #6b8e23;
-    text-align: center;
-    font-family: 'Georgia', serif;
-}
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
 
-.pertanyaan, .jawaban {
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 15px;
-    margin-bottom: 20px;
-    background-color: #fafafa;
-}
+        h1 {
+            color: #6b8e23;
+            text-align: center;
+            font-family: 'Georgia', serif;
+        }
 
-.pertanyaan {
-    background-color: #f0fff0;
-}
+        .pertanyaan,
+        .jawaban {
+            border: 1px solid
+            #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #fafafa;
+        }
 
-.jawaban {
-    background-color: #f9f9f9;
-}
+        .pertanyaan {
+            background-color: #f0fff0;
+        }
 
-strong {
-    color: #2e8b57;
-}
+        .jawaban {
+            background-color: #f9f9f9;
+        }
 
-.image {
-    max-width: 200px;
-    max-height: 200px;
-    display: block;
-    margin: 10px 0;
-}
+        strong {
+            color: #2e8b57;
+        }
 
-.rating {
-    direction: rtl;
-    unicode-bidi: bidi-override;
-    font-size: 1.5em;
-    display: inline-block;
-}
+        .image {
+            max-width: 200px;
+            max-height: 200px;
+            display: block;
+            margin: 10px 0;
+        }
 
-.rating input {
-    display: none;
-}
+        .rating {
+            direction: rtl;
+            unicode-bidi: bidi-override;
+            font-size: 1.5em;
+            display: inline-block;
+        }
 
-.rating label {
-    color: #ddd;
-    float: right;
-}
+        .rating input {
+            display: none;
+        }
 
-.rating input:checked ~ label,
-.rating input:checked ~ label ~ label {
-    color: #f5b301;
-}
+        .rating label {
+            color: #ddd;
+            float: right;
+        }
 
-.rating label:hover,
-.rating label:hover ~ label {
-    color: #ffdd44;
-}
+        .rating input:checked~label,
+        .rating input:checked~label~label {
+            color: #f5b301;
+        }
 
-.result-rating {
-    color: #f5b301;
-    font-size: 1.5em;
-}
+        .rating label:hover,
+        .rating label:hover~label {
+            color: #ffdd44;
+        }
 
-.result-rating .star {
-    color: #ddd;
-}
+        .result-rating {
+            color: #f5b301;
+            font-size: 1.5em;
+        }
 
-.result-rating .filled {
-    color: #f5b301;
-}
-.like-button, .unlike-button {
-        background-color: #6b8e23;
-        color: white;
-        padding: 5px 8px;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        font-size: 12px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        width: 50px;
-        height: 30px;
-    }
+        .result-rating .star {
+            color: #ddd;
+        }
 
-    .unlike-button::after {
-        content: "\1F447";
-        margin-left: 5px;
-    }
-textarea {
-    width: 100%;
-    height: 100px;
-    padding: 10px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    margin-bottom: 10px;
-    font-family: 'Arial', sans-serif;
-}
+        .result-rating .filled {
+            color: #f5b301;
+        }
 
-input[type="submit"] {
-    background-color: #6b8e23;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-}
+        .like-button,
+        .unlike-button {
+            background-color: #6b8e23;
+            color: white;
+            padding: 5px 8px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 50px;
+            height: 30px;
+        }
 
-.footer {
-    text-align: center;
-    padding: 20px;
-    background-color: #6b8e23;
-    color: white;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-}
+        .unlike-button::after {
+            content: "\1F447";
+            margin-left: 5px;
+        }
 
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            font-family: 'Arial', sans-serif;
+        }
+
+        input[type="submit"] {
+            background-color: #6b8e23;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #6b8e23;
+            color: white;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
     </style>
     <script>
         function tampilkanFormLaporan(id) {
@@ -288,16 +305,28 @@ input[type="submit"] {
 </head>
 <body>
 
-    <form action ="" method="post" enctype="multipart/form-data"></form>    
+<form action="" method="post" enctype="multipart/form-data"></form>
     <div class="container">
         <h1>Pertanyaan Seputar Petani</h1>
+        <form method="GET" action="daftar_pertanyaan.php">
+            <input type="text" name="keyword" placeholder="Cari pertanyaan...">
+            <select name="kategori">
+                <option value="">Semua Kategori</option>
+                <option value="Kategori1">Kategori 1</option>
+                <option value="Kategori2">Kategori 2</option>
+                <option value="Kategori3">Kategori 3</option>
+                <!-- Tambahkan opsi untuk kategori lainnya jika diperlukan -->
+            </select>
 
+            <input type="submit" value="Cari">
+        </form>
         <?php
         if (!empty($laporanPesan)) {
             echo "<script>alert('" . addslashes($laporanPesan) . "');</script>";
         }
 
-        function display_stars($rating) {
+        function display_stars($rating)
+        {
             $stars = "";
             for ($i = 1; $i <= 5; $i++) {
                 if ($i <= $rating) {
@@ -311,6 +340,7 @@ input[type="submit"] {
 
         if ($result_pertanyaan->num_rows > 0) {
             while ($pertanyaan = $result_pertanyaan->fetch_assoc()) {
+                echo "<strong>Username:</strong> " . htmlspecialchars($pertanyaan["username"]) . "<br>";
                 echo "<div class='pertanyaan'>";
                 echo "<strong>Pertanyaan:</strong> " . htmlspecialchars($pertanyaan["isi_pertanyaan"]) . "<br>";
                 echo "<strong>Tanggal:</strong> " . htmlspecialchars($pertanyaan["tanggal_posting"]) . "<br>";
@@ -319,14 +349,18 @@ input[type="submit"] {
                     $foto_base64 = base64_encode($pertanyaan["foto"]);
                     echo "<strong>Foto:</strong><br><img src='data:image/jpeg;base64,{$foto_base64}' alt='Foto Pertanyaan' class='image'><br>";
                 }
-
+                $sql_pertanyaan = "SELECT * FROM pertanyaan ORDER BY tanggal_posting DESC";
+                echo "<strong>Kategori:</strong> " . htmlspecialchars($pertanyaan["kategori"]) . "<br>";
+                
                 $sql_jawaban = "SELECT * FROM jawaban WHERE id_pertanyaan = " . $pertanyaan["id_pertanyaan"];
                 $result_jawaban = $conn->query($sql_jawaban);
 
                 if ($result_jawaban->num_rows > 0) {
                     while ($jawaban = $result_jawaban->fetch_assoc()) {
+                        echo "<strong>Username:</strong> " . htmlspecialchars($pertanyaan["username"]) . "<br>";
                         echo "<div class='jawaban'>";
                         echo "<strong>Jawaban:</strong> " . htmlspecialchars($jawaban["isi_jawaban"]) . "<br>";
+                        echo "<strong>Tanggal:</strong> " . htmlspecialchars($pertanyaan["tanggal_posting"]) . "<br>";
 
                         $sql_avg_rating = "SELECT AVG(nilai) as average_rating FROM rating_jawaban WHERE id_jawaban = " . $jawaban["id_jawaban"];
                         $result_avg_rating = $conn->query($sql_avg_rating);
@@ -349,7 +383,7 @@ input[type="submit"] {
                         echo "<input type='hidden' name='id_jawaban' value='" . $jawaban["id_jawaban"] . "'>";
                         echo "<input type='hidden' name='id_pengguna' value='1'>";
                         echo "<input type='submit' name='like' class='thumb-up' value='&#128077;'>";
-                        echo "<input type='submit' name='unlike' class='thumb-down' value='&#128078;&#8416;'>";
+                        echo "<input type='submit' name='unlike' class='thumb-down' value='&#128078;'>";
                         echo "<span class='like-count'>Likes: $likes</span>";
                         echo "</form>";
 
@@ -390,17 +424,12 @@ input[type="submit"] {
                 echo "<input type='hidden' name='id_pengguna' value='1'>";
                 echo "<input type='hidden' name='id_pertanyaan' value='" . $pertanyaan["id_pertanyaan"] . "'>";
                 echo "<textarea name='alasan_laporan' placeholder='Alasan laporan...' required></textarea><br>";
-                echo "<input type='submit' value='Kirim Laporan'>";
-                echo "</form>";
-
-                echo "</div>";
+                echo " </div>";
             }
         } else {
             echo "Tidak ada pertanyaan yang ditemukan.";
         }
         ?>
     </div>
-
-</body>
-</html>
-
+    </body>
+    </html>
