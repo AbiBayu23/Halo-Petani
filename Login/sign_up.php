@@ -4,7 +4,6 @@ $server = "localhost";
 $user = "root";
 $password = "Perkasa23@rcm";
 $nama_database = "halopetani";
-$noHP="no_HP";
 
 
 // Buat koneksi ke database
@@ -17,12 +16,13 @@ if ($conn->connect_error) {
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $user = $_POST['username'];
+    $email = $_POST['email'];
     $noHP = $_POST['noHP'];
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
     // Simpan user baru ke database
-    $stmt = $conn->prepare("INSERT INTO pengguna (username, noHP, password) VALUES (?, ?, ?)");
-    $stmt->bind_param("sss", $user, $noHP, $password);
+    $stmt = $conn->prepare("INSERT INTO pengguna (username, email, noHP, password) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("ssss", $user, $email, $noHP, $password);
 
     if ($stmt->execute()) {
         header("Location: login_pengguna.html");
