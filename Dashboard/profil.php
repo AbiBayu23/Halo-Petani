@@ -1,38 +1,42 @@
 <?php
-session_start(); // Start the session to access session variables
+session_start();
 
-// Check if the user is logged in
-if (!isset($_SESSION['id'])) {
+if (!isset($_SESSION['user_id'])) {
     echo json_encode(array('error' => 'User not logged in'));
     exit;
 }
 
-// Get the user ID from the session
-$user_id = $_SESSION['id'];
+$user_id = $_SESSION['user_id'];
 
-// Establish database connection (replace with your database credentials)
+error_log("User ID: " . $user_id);
+
 $servername = "localhost";
 $username = "root";
 $password = "Perkasa23@rcm";
 $dbname = "halopetani";
 
-// Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Check connection
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    die(json_encode(array('error' => 'Connection failed: ' . $conn->connect_error)));
 }
 
-// Fetch the user's data
 $sql = "SELECT username, email, noHP, tanggal_daftar FROM pengguna WHERE id = ?";
 $stmt = $conn->prepare($sql);
+
+if (!$stmt) {
+    die(json_encode(array('error' => 'Prepare failed: ' . $conn->error)));
+}
+
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
+if ($result === false) {
+    die(json_encode(array('error' => 'Execute failed: ' . $stmt->error)));
+}
+
 if ($result->num_rows > 0) {
-    // Output data of the first row
     $row = $result->fetch_assoc();
     echo json_encode($row);
 } else {
