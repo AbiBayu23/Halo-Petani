@@ -1,49 +1,46 @@
 <?php
-$server = "localhost";
-$user = "root";
-$password = "Perkasa23@rcm";
-$nama_database = "halopetani";
-$noHP="no_HP";
+session_start();
 
-// Buat koneksi ke database
-$conn = new mysqli($server, $user, $password, $nama_database);
+// Ambil data login dari form
+$username = $_POST['username'];
+$password = $_POST['password'];
 
-// Periksa koneksi
+// Koneksi ke database
+$servername = "localhost";
+$db_username = "root";
+$db_password = "Perkasa23@rcm";
+$dbname = "halopetani";
+
+$conn = new mysqli($servername, $db_username, $db_password, $dbname);
+
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-    $noHP = $_POST['noHP'];
+$sql = "SELECT id, username, password FROM pengguna WHERE username = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $username);
+$stmt->execute();
+$result = $stmt->get_result();
 
-    // Cari user berdasarkan username dan noHP
-    $stmt = $conn->prepare("SELECT password FROM pengguna WHERE username = ? AND noHP = ?");
-    $stmt->bind_param("ss", $username, $noHP);
-    $stmt->execute();
-    $stmt->store_result();
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
 
-    if ($stmt->num_rows > 0) {
-        $stmt->bind_result($hashed_password);
-        $stmt->fetch();
+    // Asumsikan password disimpan dalam bentuk hash
+    if (password_verify($password, $row['password'])) {
+        $_SESSION['user_id'] = $row['id'];
+        $_SESSION['username'] = $row['username'];
 
-        // Verifikasi password
-        if (password_verify($password, $hashed_password)) {
-            session_start();
-                $_SESSION['user_id'] = $id;
-                $_SESSION['username'] = $username;
-            header("Location: ./Dashboard/DashboardUser.html");
-            exit();
-        } else {
-            echo "Invalid password.";
-        }
+        // Redirect ke halaman profil
+        header('Location: ../Dashboard/DashboardUser.html');
+        exit;
     } else {
-        echo "Invalid username or No HP.";
+        echo "Login failed";
     }
-
-    $stmt->close();
+} else {
+    echo "Login failed";
 }
 
+$stmt->close();
 $conn->close();
-?> 
+?>
