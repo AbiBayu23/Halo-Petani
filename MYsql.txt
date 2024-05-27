@@ -34,10 +34,11 @@ create table artikel(
     id_artikel int not null primary key auto_increment,
     id_admin int not null,
     id_jenis_artikel int not null,
-    judul_artikel varchar (100) not null,
-    isi_artikel TEXT,
+    judul varchar (100) not null,
+    konten TEXT,
     tanggal_posting date not null,
-    rata_rata_rating double precision,
+    kategori varchar(100),
+    rating int,
     foreign key (id_admin) references admin (id_admin),
     foreign key (id_jenis_artikel) references jenis_artikel (id_jenis_artikel));
  create table pertanyaan(
