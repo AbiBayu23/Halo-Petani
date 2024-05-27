@@ -239,28 +239,6 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
         .result-rating .filled {
             color: #f5b301;
         }
-
-        .like-button,
-        .unlike-button {
-            background-color: #6b8e23;
-            color: white;
-            padding: 5px 8px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 50px;
-            height: 30px;
-        }
-
-        .unlike-button::after {
-            content: "\1F447";
-            margin-left: 5px;
-        }
-
         textarea {
             width: 100%;
             height: 100px;
@@ -303,7 +281,6 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
     </script>
 </head>
 <body>
-
 <form action="" method="post" enctype="multipart/form-data"></form>
     <div class="container">
         <h1>Pertanyaan Seputar Petani</h1>
@@ -342,7 +319,7 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                 echo "<div class='pertanyaan'>";
                 echo "<strong>Pertanyaan:</strong> " . htmlspecialchars($pertanyaan["isi_pertanyaan"]) . "<br>";
                 echo "<strong>Tanggal:</strong> " . htmlspecialchars($pertanyaan["tanggal_posting"]) . "<br>";
-
+                
                 if (!empty($pertanyaan["foto"])) {
                     $foto_base64 = base64_encode($pertanyaan["foto"]);
                     echo "<strong>Foto:</strong><br><img src='data:image/jpeg;base64,{$foto_base64}' alt='Foto Pertanyaan' class='image'><br>";
@@ -368,23 +345,43 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                             $average_rating = $row_avg_rating['average_rating'];
                             echo "<div class='result-rating'>" . display_stars(round($average_rating)) . " (" . round($average_rating, 2) . ")</div>";
                         }
-
+                        
                         $sql_quality_point = "SELECT COUNT(*) as likes FROM quality_point WHERE id_jawaban = " . $jawaban["id_jawaban"];
                         $result_quality_point = $conn->query($sql_quality_point);
                         $likes = 0;
-                        if ($result_quality_point->num_rows > 0) {
+                        
+                        if ($result_quality_point && $result_quality_point->num_rows > 0) {
                             $row_quality_point = $result_quality_point->fetch_assoc();
                             $likes = $row_quality_point['likes'];
                         }
-
-                        echo "<form method='POST' action='daftar_pertanyaan.php'>";
+                        
+                        echo "<form method='POST' class='like-form'>";
                         echo "<input type='hidden' name='id_jawaban' value='" . $jawaban["id_jawaban"] . "'>";
                         echo "<input type='hidden' name='id_pengguna' value='1'>";
-                        echo "<input type='submit' name='like' class='thumb-up' value='&#128077;'>";
-                        echo "<input type='submit' name='unlike' class='thumb-down' value='&#128078;'>";
-                        echo "<span class='like-count'>Likes: $likes</span>";
-                        echo "</form>";
+                        
+                        $sql_check_quality = "SELECT COUNT(*) as num_likes FROM quality_point WHERE id_jawaban = ? AND id_pengguna = ?";
+                        $stmt_check_quality = $conn->prepare($sql_check_quality);
+                        $stmt_check_quality->bind_param("ii", $jawaban["id_jawaban"], $id_pengguna); // Ganti 1 dengan id_pengguna yang sesuai
+                        $stmt_check_quality->execute();
+                        $result_check_quality = $stmt_check_quality->get_result();
+                        
+                        if ($result_check_quality) {
+                            $row_check_quality = $result_check_quality->fetch_assoc();
+                            $num_likes = $row_check_quality['num_likes'];
+                        
+                            echo "<div id='like-container-" . $jawaban["id_jawaban"] . "'>";
+                            if ($num_likes == 0) {
+                                echo "<button type='submit' name='like' value='like' class='like-button' data-jawaban-id='" . $jawaban["id_jawaban"] . "'>Like &#128077;</button>";
+                            } else {
+                                echo "<button type='submit' name='unlike' value='unlike' class='like-button' data-jawaban-id='" . $jawaban["id_jawaban"] . "'>Unlike &#128078;</button>";
+                            }
+                            echo "<span class='like-count'>" . $num_likes . "</span>";
+                            echo "</div>";
+                        } else {
 
+                            echo "Error: " . $conn->error;
+                        }
+                 
                         echo "<form method='POST' action='daftar_pertanyaan.php'>";
                         echo "<input type='hidden' name='id_jawaban' value='" . $jawaban["id_jawaban"] . "'>";
                         echo "<input type='hidden' name='id_pengguna' value='1'>";
