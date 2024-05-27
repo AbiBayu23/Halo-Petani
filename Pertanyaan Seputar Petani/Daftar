@@ -38,7 +38,6 @@ $sql_pertanyaan = "SELECT pertanyaan.*, pengguna.username FROM pertanyaan JOIN p
     
     if ($result_pertanyaan->num_rows > 0) {
         while ($pertanyaan = $result_pertanyaan->fetch_assoc()) {
-            // Tampilkan pertanyaan
         }
     } else {
         echo "Tidak ada pertanyaan yang ditemukan.";
@@ -315,7 +314,6 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                 <option value="Kategori1">Kategori 1</option>
                 <option value="Kategori2">Kategori 2</option>
                 <option value="Kategori3">Kategori 3</option>
-                <!-- Tambahkan opsi untuk kategori lainnya jika diperlukan -->
             </select>
 
             <input type="submit" value="Cari">
