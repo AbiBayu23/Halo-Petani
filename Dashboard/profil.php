@@ -8,14 +8,10 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
+// Logging untuk debugging
 error_log("User ID: " . $user_id);
 
-$servername = "localhost";
-$username = "root";
-$password = "Perkasa23@rcm";
-$dbname = "halopetani";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
+include '../Login/config.php';
 
 if ($conn->connect_error) {
     die(json_encode(array('error' => 'Connection failed: ' . $conn->connect_error)));
