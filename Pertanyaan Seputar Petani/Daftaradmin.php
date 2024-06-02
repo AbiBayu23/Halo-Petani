@@ -1,16 +1,26 @@
 <?php
+session_start();
 include '../Login/config.php';
+
+// Check if user is logged in
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
+    header('Location: ../Login/Login.html');
+    exit;
+}
+
+$logged_in_user_id = $_SESSION['user_id'];
+$logged_in_username = $_SESSION['username'];
 
 $laporanPesan = "";
 $whereClause = "";
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['id_pertanyaan']) && isset($_POST['isi_jawaban']) && isset($_POST['id_pengguna'])) {
+    // Handling Answer Posting
+    if (isset($_POST['id_pertanyaan']) && isset($_POST['isi_jawaban'])) {
         $id_pertanyaan = $_POST['id_pertanyaan'];
         $isi_jawaban = $_POST['isi_jawaban'];
-        $id_pengguna = $_POST['id_pengguna'];
 
         $stmt = $conn->prepare("INSERT INTO jawaban (id_pertanyaan, id_pengguna, isi_jawaban, tanggal_posting) VALUES (?, ?, ?, CURDATE())");
-        $stmt->bind_param("iis", $id_pertanyaan, $id_pengguna, $isi_jawaban);
+        $stmt->bind_param("iis", $id_pertanyaan, $logged_in_user_id, $isi_jawaban);
 
         if ($stmt->execute()) {
             echo "Jawaban berhasil diposting!";
@@ -33,8 +43,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
 
   }
-$sql_pertanyaan = "SELECT pertanyaan.*, pengguna.username FROM pertanyaan JOIN pengguna ON pertanyaan.id_pengguna = pengguna.id WHERE 1 $whereClause ORDER BY pertanyaan.tanggal_posting DESC";
-    $result_pertanyaan = $conn->query($sql_pertanyaan);
+  $sql_pertanyaan = "SELECT pertanyaan.*, pengguna.username FROM pertanyaan JOIN pengguna ON pertanyaan.id_pengguna = pengguna.id WHERE 1 $whereClause ORDER BY tanggal_posting DESC";
+  $result_pertanyaan = $conn->query($sql_pertanyaan);
     
     if ($result_pertanyaan->num_rows > 0) {
         while ($pertanyaan = $result_pertanyaan->fetch_assoc()) {
@@ -144,9 +154,10 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Posting Pertanyaan</title>
+    <title>Daftar Pertanyaan</title>
     <link rel="stylesheet" href="../Dashboard/style.css">
     <style>
+        <style>
         body {
             font-family: 'Arial', sans-serif;
             background-color: #fff;
@@ -271,21 +282,18 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
          margin-top: 20px;
         }
     </style>
+    </style>
     <script>
         function tampilkanFormLaporan(id) {
             const formLaporan = document.getElementById('form-laporan-' + id);
-            if (formLaporan.style.display === 'none') {
-                formLaporan.style.display = 'block';
-            } else {
-                formLaporan.style.display = 'none';
-            }
+            formLaporan.style.display = (formLaporan.style.display === 'none') ? 'block' : 'none';
         }
     </script>
 </head>
 <body>
 <nav>
-        <div class="wrapper">
-            <div class="logo"><a href='../Dashboard/DashboardAdmin.html'>HALO PETANI</a></div>
+    <div class="wrapper">
+    <div class="logo"><a href='../Dashboard/DashboardAdmin.html'>HALO PETANI</a></div>
             <div class="menu">
                 <ul>
                 <li><a href="../Dashboard/DashboardAdmin.html" class="tbl-biru">Beranda</a></li>
@@ -293,22 +301,23 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                     <li><a href="../Artikel/show_artikel.php" class="tbl-biru">Artikel</a></li>
                     <li><a href="#artikel" class="tbl-biru">Laporan</a></li>
                     <li><a href="../Login/Login.html" class="tbl-biru">Log Out</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container">
+    <nav>
+        <div class="wrapper">
+            <div class="logo"><a>Daftar Pertanyaan</a></div>
+            <div class="menu">
+                <ul>
+                    <li><a href="Posting.php" class="tbl-biru">Posting Pertanyaan</a></li>
+                    <li><a href="Top_Ten.php" class="tbl-biru">Top Pengguna</a></li>
+                </ul>
             </div>
         </div>
     </nav>
-<form action="" method="post" enctype="multipart/form-data"></form>
-    <div class="container">
-        <nav>
-         <div class="wrapper">
-         <div class="logo"><a>Daftar Pertanyaan</a></div>
-            <div class="menu">
-                <ul>
-                    <li><a href="Toptenadmin.php" class="tbl-biru">Top Pengguna</a></li>
-            </div>
-        </div>
-        
-        </nav>
-        <div class="top-users">
+    <div class="top-users">
         <form method="GET" action="Daftar.php">
             <input type="text" name="keyword" placeholder="Cari pertanyaan...">
             <select name="kategori">
@@ -317,171 +326,124 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                 <option value="Kategori2">Kategori 2</option>
                 <option value="Kategori3">Kategori 3</option>
             </select>
-
             <input type="submit" value="Cari">
         </form>
-        </div>
-        <?php
-        if (!empty($laporanPesan)) {
-            echo "<script>alert('" . addslashes($laporanPesan) . "');</script>";
-        }
+    </div>
+    <?php
+    if (!empty($laporanPesan)) {
+        echo "<script>alert('" . addslashes($laporanPesan) . "');</script>";
+    }
 
-        function display_stars($rating)
-        {
-            $stars = "";
-            for ($i = 1; $i <= 5; $i++) {
-                if ($i <= $rating) {
-                    $stars .= "<span class='star filled'>★</span>";
-                } else {
-                    $stars .= "<span class='star'>★</span>";
-                }
+    function display_stars($rating) {
+        $stars = "";
+        for ($i = 1; $i <= 5; $i++) {
+            $stars .= ($i <= $rating) ? "<span class='star filled'>★</span>" : "<span class='star'>★</span>";
+        }
+        return $stars;
+    }
+
+    if ($result_pertanyaan->num_rows > 0) {
+        while ($pertanyaan = $result_pertanyaan->fetch_assoc()) {
+            echo "<strong>Username:</strong> " . htmlspecialchars($pertanyaan["username"]) . "<br>";
+            echo "<div class='pertanyaan'>";
+            echo "<strong>Pertanyaan:</strong> " . htmlspecialchars($pertanyaan["isi_pertanyaan"]) . "<br>";
+            echo "<strong>Tanggal:</strong> " . htmlspecialchars($pertanyaan["tanggal_posting"]) . "<br>";
+            if (!empty($pertanyaan["foto"])) {
+                $foto_base64 = base64_encode($pertanyaan["foto"]);
+                echo "<strong>Foto:</strong><br><img src='data:image/jpeg;base64,{$foto_base64}' alt='Foto Pertanyaan' class='image'><br>";
             }
-            return $stars;
-        }
+            echo "<strong>Kategori:</strong> " . htmlspecialchars($pertanyaan["kategori"]) . "<br>";
 
-        if ($result_pertanyaan->num_rows > 0) {
-            while ($pertanyaan = $result_pertanyaan->fetch_assoc()) {
-                echo "<strong>Username:</strong> " . htmlspecialchars($pertanyaan["username"]) . "<br>";
-                echo "<div class='pertanyaan'>";
-                echo "<strong>Pertanyaan:</strong> " . htmlspecialchars($pertanyaan["isi_pertanyaan"]) . "<br>";
-                echo "<strong>Tanggal:</strong> " . htmlspecialchars($pertanyaan["tanggal_posting"]) . "<br>";
-                
-                if (!empty($pertanyaan["foto"])) {
-                    $foto_base64 = base64_encode($pertanyaan["foto"]);
-                    echo "<strong>Foto:</strong><br><img src='data:image/jpeg;base64,{$foto_base64}' alt='Foto Pertanyaan' class='image'><br>";
-                }
-                $sql_pertanyaan = "SELECT * FROM pertanyaan ORDER BY tanggal_posting DESC";
-                echo "<strong>Kategori:</strong> " . htmlspecialchars($pertanyaan["kategori"]) . "<br>";
-                
-                $sql_jawaban = "SELECT * FROM jawaban WHERE id_pertanyaan = " . $pertanyaan["id_pertanyaan"];
-                $result_jawaban = $conn->query($sql_jawaban);
+            $sql_jawaban = "SELECT jawaban.*, pengguna.username AS jawaban_username FROM jawaban JOIN pengguna ON jawaban.id_pengguna = pengguna.id WHERE id_pertanyaan = " . $pertanyaan["id_pertanyaan"];
+            $result_jawaban = $conn->query($sql_jawaban);
 
-                if ($result_jawaban->num_rows > 0) {
-                    while ($jawaban = $result_jawaban->fetch_assoc()) {
-                        echo "<strong>Username:</strong> " . htmlspecialchars($pertanyaan["username"]) . "<br>";
-                        echo "<div class='jawaban'>";
-                        echo "<strong>Jawaban:</strong> " . htmlspecialchars($jawaban["isi_jawaban"]) . "<br>";
-                        echo "<strong>Tanggal:</strong> " . htmlspecialchars($pertanyaan["tanggal_posting"]) . "<br>";
+            if ($result_jawaban->num_rows > 0) {
+                while ($jawaban = $result_jawaban->fetch_assoc()) {
+                    echo "<div class='jawaban'>";
+                    echo "<strong>Username:</strong> " . htmlspecialchars($jawaban["jawaban_username"]) . "<br>";
+                    echo "<strong>Jawaban:</strong> " . htmlspecialchars($jawaban["isi_jawaban"]) . "<br>";
+                    echo "<strong>Tanggal:</strong> " . htmlspecialchars($jawaban["tanggal_posting"]) . "<br>";
 
-                        $sql_avg_rating = "SELECT AVG(nilai) as average_rating FROM rating_jawaban WHERE id_jawaban = " . $jawaban["id_jawaban"];
-                        $result_avg_rating = $conn->query($sql_avg_rating);
+                    $sql_avg_rating = "SELECT AVG(nilai) as average_rating FROM rating_jawaban WHERE id_jawaban = " . $jawaban["id_jawaban"];
+                    $result_avg_rating = $conn->query($sql_avg_rating);
 
-                        if ($result_avg_rating->num_rows > 0) {
-                            $row_avg_rating = $result_avg_rating->fetch_assoc();
-                            $average_rating = $row_avg_rating['average_rating'];
-                            echo "<div class='result-rating'>" . display_stars(round($average_rating)) . " (" . round($average_rating, 2) . ")</div>";
-                        }
-                        
-                        $sql_quality_point = "SELECT COUNT(*) as likes FROM quality_point WHERE id_jawaban = " . $jawaban["id_jawaban"];
-                        $result_quality_point = $conn->query($sql_quality_point);
-                        $likes = 0;
-                        
-                        if ($result_quality_point && $result_quality_point->num_rows > 0) {
-                            $row_quality_point = $result_quality_point->fetch_assoc();
-                            $likes = $row_quality_point['likes'];
-                        }
-                        
-                        echo "<form method='POST' class='like-form'>";
-                        echo "<input type='hidden' name='id_jawaban' value='" . $jawaban["id_jawaban"] . "'>";
-                        echo "<input type='hidden' name='id_pengguna' value='1'>";
-                        
-                        $sql_check_quality = "SELECT COUNT(*) as num_likes FROM quality_point WHERE id_jawaban = ? AND id_pengguna = ?";
-                        $stmt_check_quality = $conn->prepare($sql_check_quality);
-                        $stmt_check_quality->bind_param("ii", $jawaban["id_jawaban"], $id_pengguna); // Ganti 1 dengan id_pengguna yang sesuai
-                        $stmt_check_quality->execute();
-                        $result_check_quality = $stmt_check_quality->get_result();
-                        
-                        if ($result_check_quality) {
-                            $row_check_quality = $result_check_quality->fetch_assoc();
-                            $num_likes = $row_check_quality['num_likes'];
-                        
-                            echo "<div id='like-container-" . $jawaban["id_jawaban"] . "'>";
-                            if ($num_likes == 0) {
-                                echo "<button type='submit' name='like' value='like' class='like-button' data-jawaban-id='" . $jawaban["id_jawaban"] . "'>Like &#128077;</button>";
-                            } else {
-                                echo "<button type='submit' name='unlike' value='unlike' class='like-button' data-jawaban-id='" . $jawaban["id_jawaban"] . "'>Unlike &#128078;</button>";
-                            }
-                            echo "<span class='like-count'>" . $num_likes . "</span>";
-                            echo "</div>";
+                    if ($result_avg_rating->num_rows > 0) {
+                        $row_avg_rating = $result_avg_rating->fetch_assoc();
+                        $average_rating = $row_avg_rating['average_rating'];
+                        echo "<div class='result-rating'>" . display_stars(round($average_rating)) . " (" . round($average_rating, 2) . ")</div>";
+                    }
+
+                    // Handle likes
+                    $sql_quality_point = "SELECT COUNT(*) as likes FROM quality_point WHERE id_jawaban = " . $jawaban["id_jawaban"];
+                    $result_quality_point = $conn->query($sql_quality_point);
+                    $likes = 0;
+                    if ($result_quality_point && $result_quality_point->num_rows > 0) {
+                        $row_quality_point = $result_quality_point->fetch_assoc();
+                        $likes = $row_quality_point['likes'];
+                    }
+                    
+                    $stmt_check_quality = $conn->prepare("SELECT COUNT(*) as num_likes FROM quality_point WHERE id_jawaban = ? AND id_pengguna = ?");
+                    $stmt_check_quality->bind_param("ii", $jawaban["id_jawaban"], $logged_in_user_id);
+                    $stmt_check_quality->execute();
+                    $result_check_quality = $stmt_check_quality->get_result();
+
+                    echo "<form method='POST' class='like-form'>";
+                    echo "<input type='hidden' name='id_jawaban' value='" . $jawaban["id_jawaban"] . "'>";
+                    echo "<input type='hidden' name='id_pengguna' value='$logged_in_user_id'>";
+                    
+                    if ($result_check_quality) {
+                        $row_check_quality = $result_check_quality->fetch_assoc();
+                        $num_likes = $row_check_quality['num_likes'];
+
+                        echo "<div id='like-container-" . $jawaban["id_jawaban"] . "'>";
+                        if ($num_likes == 0) {
+                            echo "<button type='submit' name='like' value='like' class='like-button' data-jawaban-id='" . $jawaban["id_jawaban"] . "'>Like &#128077;</button>";
                         } else {
-
-                            echo "Error: " . $conn->error;
+                            echo "<button type='submit' name='unlike' value='unlike' class='unlike-button' data-jawaban-id='" . $jawaban["id_jawaban"] . "'>Unlike &#128078;</button>";
                         }
-                 
-                        echo "<form method='POST' action='Daftar.php'>";
-                        echo "<input type='hidden' name='id_jawaban' value='" . $jawaban["id_jawaban"] . "'>";
-                        echo "<input type='hidden' name='id_pengguna' value='1'>";
-                        echo "<div class='rating'>";
-                        echo "<input type='radio' id='star5-" . $jawaban["id_jawaban"] . "' name='nilai' value='5'><label for='star5-" . $jawaban["id_jawaban"] . "'>★</label>";
-                        echo "<input type='radio' id='star4-" . $jawaban["id_jawaban"] . "' name='nilai' value='4'><label for='star4-" . $jawaban["id_jawaban"] . "'>★</label>";
-                        echo "<input type='radio' id='star3-" . $jawaban["id_jawaban"] . "' name='nilai' value='3'><label for='star3-" . $jawaban["id_jawaban"] . "'>★</label>";
-                        echo "<input type='radio' id='star2-" . $jawaban["id_jawaban"] . "' name='nilai' value='2'><label for='star2-" . $jawaban["id_jawaban"] . "'>★</label>";
-                        echo "<input type='radio' id='star1-" . $jawaban["id_jawaban"] . "' name='nilai' value='1'><label for='star1-" . $jawaban["id_jawaban"] . "'>★</label>";
-                        echo "</div>";
-                        echo "<input type='submit' value='Rate'>";
-                        echo "</form>";
-
-                        echo "<button onclick='tampilkanFormLaporan(\"jawaban-" . $jawaban["id_jawaban"] . "\")'>Laporkan</button>";
-                        echo "<form method='POST' action='Daftar.php' id='form-laporan-jawaban-" . $jawaban["id_jawaban"] . "' style='display:none;'>";
-                        echo "<input type='hidden' name='id_pengguna' value='1'>";
-                        echo "<input type='hidden' name='id_jawaban' value='" . $jawaban["id_jawaban"] . "'>";
-                        echo "<textarea name='alasan_laporan' placeholder='Alasan laporan...' required></textarea><br>";
-                        echo "<input type='submit' value='Kirim Laporan'>";
-                        echo "</form>";
-
+                        echo "<span class='like-count'>" . $likes . " likes</span>";
                         echo "</div>";
                     }
+                    echo "</form>";
+
+                    // Handle ratings
+                    echo "<form method='POST' class='rating-form'>";
+                    echo "<input type='hidden' name='id_jawaban' value='" . $jawaban["id_jawaban"] . "'>";
+                    echo "<input type='hidden' name='id_pengguna' value='$logged_in_user_id'>";
+                    echo "<div class='rating-container'>";
+                    for ($i = 1; $i <= 5; $i++) {
+                        echo "<button type='submit' name='rating' value='$i' class='star-button'>" . ($i <= round($average_rating) ? "★" : "☆") . "</button>";
+                    }
+                    echo "</div>";
+                    echo "</form>";
+                    
+                    echo "</div>"; // jawaban
                 }
-
-                echo "<form method='POST' action='Daftar.php'>";
-                echo "<input type='hidden' name='id_pertanyaan' value='" . $pertanyaan["id_pertanyaan"] . "'>";
-                echo "<input type='hidden' name='id_pengguna' value='1'>";
-                echo "<textarea name='isi_jawaban' placeholder='Masukkan jawaban Anda...' required></textarea><br>";
-                echo "<input type='submit' value='Kirim Jawaban'>";
-                echo "</form>";
-
-                echo "<button onclick='tampilkanFormLaporan(\"pertanyaan-" . $pertanyaan["id_pertanyaan"] . "\")'>Laporkan</button>";
-                echo "<form method='POST' action='Daftar.php' id='form-laporan-pertanyaan-" . $pertanyaan["id_pertanyaan"] . "' style='display:none;'>";
-                echo "<input type='hidden' name='id_pengguna' value='1'>";
-                echo "<input type='hidden' name='id_pertanyaan' value='" . $pertanyaan["id_pertanyaan"] . "'>";
-                echo "<textarea name='alasan_laporan' placeholder='Alasan laporan...' required></textarea><br>";
-                echo " </div>";
+            } else {
+                echo "Belum ada jawaban.";
             }
-        } else {
-            echo "Tidak ada pertanyaan yang ditemukan.";
-        }
-        ?>
-    </div>
-    </body>
-    <footer id="kontak">
-        <div class="wrapper">
-            <div class="footer-container">
-                <div class="footer-section">
-                    <h3>Halo Petani</h3>
-                    <p>Menyediakan layanan konsultasi berbayar selama 1 bulan</p>
-                </div>
-                <div class="footer-section">
-                    <h3>About</h3>
-                    <p>Website resmi yang menyediakan layanan untuk kepentingan petani</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Contact</h3>
-                    <p>Telp : 000000000101</p>
-                    <p>Jl. Badak dan kaki tiga</p>
-                    <p>Kode Pos: 666</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Social</h3>
-                    <p><b>YouTube:</b> Halo Petani</p>
-                </div>
+            ?>
+            <div class="post-answer">
+                <h3>Berikan Jawaban:</h3>
+                <form method="POST">
+                    <input type="hidden" name="id_pertanyaan" value="<?php echo $pertanyaan['id_pertanyaan']; ?>">
+                    <textarea name="isi_jawaban" required></textarea>
+                    <input type="submit" value="Post Jawaban">
+                </form>
             </div>
-        </div>
-        </footer>
-    </div>
-    
-    <footer id="copyright">
-        <div class="wrapper">
-            &copy; 2024. <b>Halo Petani</b> All Rights Reserved.
-        </div>
-    </footer>
-    </html>
+            <button onclick="tampilkanFormLaporan(<?php echo $pertanyaan['id_pertanyaan']; ?>)">Laporkan</button>
+            <form id="form-laporan-<?php echo $pertanyaan['id_pertanyaan']; ?>" method="POST" style="display: none;">
+                <input type="hidden" name="id_pertanyaan" value="<?php echo $pertanyaan['id_pertanyaan']; ?>">
+                <textarea name="laporan" placeholder="Deskripsikan laporan Anda"></textarea>
+                <input type="submit" name="submit_laporan" value="Kirim Laporan">
+            </form>
+            <?php
+            echo "</div>"; // pertanyaan
+        }
+    } else {
+        echo "Belum ada pertanyaan.";
+    }
+    ?>
+</div>
+</body>
+</html>
