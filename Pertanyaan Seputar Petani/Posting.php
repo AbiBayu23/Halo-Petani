@@ -1,11 +1,22 @@
 <?php
+session_start();
 include '../Login/config.php';
+
+// Check if user is logged in
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
+    header('Location: ../Login/Login.html');
+    exit;
+}
+
+$logged_in_user_id = $_SESSION['user_id'];
+$logged_in_username = $_SESSION['username'];
+
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $judul = $_POST['judul'];
     $isi = $_POST['isi'];
     $kategori = $_POST['kategori'];
-    $id_pengguna = 1; // Ganti dengan ID pengguna yang valid
+    $id_pengguna = $logged_in_user_id ;
     $tanggal_posting = date('Y-m-d');
     $foto = '';
 
@@ -52,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     $sql = "INSERT INTO pertanyaan (id_tanaman, id_pengguna, judul_pertanyaan, isi_pertanyaan, tanggal_posting, status_dilaporkan, foto, kategori) 
-            VALUES (NULL, '$id_pengguna', '$judul', '$isi', '$tanggal_posting', 0, '$foto', '$kategori')";
+            VALUES (NULL, '$logged_in_user_id', '$judul', '$isi', '$tanggal_posting', 0, '$foto', '$kategori')";
 
     if ($conn->query($sql) === TRUE) {
         echo "Pertanyaan berhasil diposting!";
@@ -60,6 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         echo "Error: " . $sql . "<br>" . $conn->error;
     }
 }
+
 
 $conn->close();
 ?>
@@ -150,10 +162,10 @@ button[type="submit"]:hover {
 <body>
     <nav>
         <div class="wrapper">
-            <div class="logo"><a href='../Dashboard/DashboardAdmin.html'>HALO PETANI</a></div>
+            <div class="logo"><a href='../Dashboard/DashboardUser.html'>HALO PETANI</a></div>
             <div class="menu">
                 <ul>
-                    <li><a href="../Dashboard/DashboardAdmin.html" class="tbl-biru">Beranda</a></li>
+                    <li><a href="../Dashboard/DashboardUser.html" class="tbl-biru">Beranda</a></li>
                     <li><a href="../Dashboard/Profil.html" class="tbl-biru">Profil</a></li>
                     <li><a href="Daftar.php" class="tbl-biru">Pertanyaan</a></li>
                     <li><a href="../Pertanyaan Seputar Petani/Daftar.php" class="tbl-biru">Artikel</a></li>
