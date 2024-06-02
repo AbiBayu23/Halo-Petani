@@ -1,5 +1,5 @@
 <?php
-include 'config.php';
+include '../Login/config.php';
 
 $laporanPesan = "";
 $whereClause = "";
@@ -97,13 +97,10 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
             $stmt_quality->bind_param("ii", $id_pengguna, $id_jawaban);
 
             if ($stmt_quality->execute()) {
-                echo "Like berhasil diberikan dan quality point berhasil ditambahkan!";
             } else {
-                echo "Error: " . $stmt_quality->error;
+                $stmt_quality->error;
             }
-            $stmt_quality->close();
         } else {
-            echo "Anda sudah memberikan like pada jawaban ini.";
         }
 
         $stmt_check_quality->close();
@@ -117,9 +114,8 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
         $stmt_delete_quality->bind_param("ii", $id_jawaban, $id_pengguna);
 
         if ($stmt_delete_quality->execute()) {
-            echo "Unlike berhasil!";
         } else {
-            echo "Error: " . $stmt_delete_quality->error;
+            $stmt_delete_quality->error;
         }
 
         $stmt_delete_quality->close();
@@ -146,11 +142,14 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Pertanyaan Seputar Petani</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Posting Pertanyaan</title>
+    <link rel="stylesheet" href="../Dashboard/style.css">
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #f4f4f9;
+            background-color: #fff;
             color: #333;
             margin: 0;
             padding: 0;
@@ -167,7 +166,7 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
         }
 
         h1 {
-            color: #6b8e23;
+            color: #364f6b;
             text-align: center;
             font-family: 'Georgia', serif;
         }
@@ -191,7 +190,7 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
         }
 
         strong {
-            color: #2e8b57;
+            color: #364f6b;
         }
 
         .image {
@@ -250,7 +249,7 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
         }
 
         input[type="submit"] {
-            background-color: #6b8e23;
+            background-color: #364f6b;
             color: white;
             padding: 10px 15px;
             border: none;
@@ -262,11 +261,14 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
         .footer {
             text-align: center;
             padding: 20px;
-            background-color: #6b8e23;
+            background-color: #364f6b;
             color: white;
             position: fixed;
             bottom: 0;
             width: 100%;
+        }
+        .top-users {
+         margin-top: 20px;
         }
     </style>
     <script>
@@ -281,10 +283,35 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
     </script>
 </head>
 <body>
+<nav>
+        <div class="wrapper">
+            <div class="logo"><a href='DashboardAdmin.html'>HALO PETANI</a></div>
+            <div class="menu">
+                <ul>
+                    <li><a href="../Dashboard/DashboardAdmin.html" class="tbl-biru">Beranda</a></li>
+                    <li><a href="../Dashboard/Profil.html" class="tbl-biru">Profil</a></li>
+                    <li><a href="Daftar.php" class="tbl-biru">Pertanyaan</a></li>
+                    <li><a href="../Artikel/showartikeluser.html" class="tbl-biru">Artikel</a></li>
+                    <li><a href="../Login/Login.html" class="tbl-biru">Log Out</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 <form action="" method="post" enctype="multipart/form-data"></form>
     <div class="container">
-        <h1>Pertanyaan Seputar Petani</h1>
-        <form method="GET" action="daftar_pertanyaan.php">
+        <nav>
+         <div class="wrapper">
+         <div class="logo"><a>Daftar Pertanyaan</a></div>
+            <div class="menu">
+                <ul>
+                    <li><a href="Posting.php" class="tbl-biru">Posting Pertanyaan</a></li>
+                    <li><a href="Top_Ten.php" class="tbl-biru">Top Pengguna</a></li>
+            </div>
+        </div>
+        
+        </nav>
+        <div class="top-users">
+        <form method="GET" action="Daftar.php">
             <input type="text" name="keyword" placeholder="Cari pertanyaan...">
             <select name="kategori">
                 <option value="">Semua Kategori</option>
@@ -295,6 +322,7 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
 
             <input type="submit" value="Cari">
         </form>
+        </div>
         <?php
         if (!empty($laporanPesan)) {
             echo "<script>alert('" . addslashes($laporanPesan) . "');</script>";
@@ -382,7 +410,7 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                             echo "Error: " . $conn->error;
                         }
                  
-                        echo "<form method='POST' action='daftar_pertanyaan.php'>";
+                        echo "<form method='POST' action='Daftar.php'>";
                         echo "<input type='hidden' name='id_jawaban' value='" . $jawaban["id_jawaban"] . "'>";
                         echo "<input type='hidden' name='id_pengguna' value='1'>";
                         echo "<div class='rating'>";
@@ -396,7 +424,7 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                         echo "</form>";
 
                         echo "<button onclick='tampilkanFormLaporan(\"jawaban-" . $jawaban["id_jawaban"] . "\")'>Laporkan</button>";
-                        echo "<form method='POST' action='daftar_pertanyaan.php' id='form-laporan-jawaban-" . $jawaban["id_jawaban"] . "' style='display:none;'>";
+                        echo "<form method='POST' action='Daftar.php' id='form-laporan-jawaban-" . $jawaban["id_jawaban"] . "' style='display:none;'>";
                         echo "<input type='hidden' name='id_pengguna' value='1'>";
                         echo "<input type='hidden' name='id_jawaban' value='" . $jawaban["id_jawaban"] . "'>";
                         echo "<textarea name='alasan_laporan' placeholder='Alasan laporan...' required></textarea><br>";
@@ -407,7 +435,7 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                     }
                 }
 
-                echo "<form method='POST' action='daftar_pertanyaan.php'>";
+                echo "<form method='POST' action='Daftar.php'>";
                 echo "<input type='hidden' name='id_pertanyaan' value='" . $pertanyaan["id_pertanyaan"] . "'>";
                 echo "<input type='hidden' name='id_pengguna' value='1'>";
                 echo "<textarea name='isi_jawaban' placeholder='Masukkan jawaban Anda...' required></textarea><br>";
@@ -415,7 +443,7 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                 echo "</form>";
 
                 echo "<button onclick='tampilkanFormLaporan(\"pertanyaan-" . $pertanyaan["id_pertanyaan"] . "\")'>Laporkan</button>";
-                echo "<form method='POST' action='daftar_pertanyaan.php' id='form-laporan-pertanyaan-" . $pertanyaan["id_pertanyaan"] . "' style='display:none;'>";
+                echo "<form method='POST' action='Daftar.php' id='form-laporan-pertanyaan-" . $pertanyaan["id_pertanyaan"] . "' style='display:none;'>";
                 echo "<input type='hidden' name='id_pengguna' value='1'>";
                 echo "<input type='hidden' name='id_pertanyaan' value='" . $pertanyaan["id_pertanyaan"] . "'>";
                 echo "<textarea name='alasan_laporan' placeholder='Alasan laporan...' required></textarea><br>";
@@ -427,4 +455,35 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
         ?>
     </div>
     </body>
+    <footer id="kontak">
+        <div class="wrapper">
+            <div class="footer-container">
+                <div class="footer-section">
+                    <h3>Halo Petani</h3>
+                    <p>Menyediakan layanan konsultasi berbayar selama 1 bulan</p>
+                </div>
+                <div class="footer-section">
+                    <h3>About</h3>
+                    <p>Website resmi yang menyediakan layanan untuk kepentingan petani</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p>Telp : 000000000101</p>
+                    <p>Jl. Badak dan kaki tiga</p>
+                    <p>Kode Pos: 666</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Social</h3>
+                    <p><b>YouTube:</b> Halo Petani</p>
+                </div>
+            </div>
+        </div>
+        </footer>
+    </div>
+    
+    <footer id="copyright">
+        <div class="wrapper">
+            &copy; 2024. <b>Halo Petani</b> All Rights Reserved.
+        </div>
+    </footer>
     </html>
