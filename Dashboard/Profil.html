@@ -6,16 +6,24 @@
     <title>HALO PETANI</title>
     <link rel="stylesheet" href="style.css">
     <script>
-        // Fetch data from PHP script
         fetch('profil.php')
             .then(response => response.json())
             .then(data => {
-                document.getElementById('username').innerText = data.name;
-                document.getElementById('email').innerText = data.email;
-                document.getElementById('noHP').innerText = data.phone_number;
-                document.getElementById('tanggal_daftar').innerText = data.date_registered;
+                if (data.error) {
+                    console.error('Error: ', data.error);
+                    alert(data.error);  // Tampilkan kesalahan kepada pengguna
+                } else {
+                    console.log('Data received: ', data);  // Debug logging
+                    document.getElementById('username').innerText = data.username || 'N/A';
+                    document.getElementById('email').innerText = data.email || 'N/A';
+                    document.getElementById('noHP').innerText = data.noHP || 'N/A';
+                    document.getElementById('tanggal_daftar').innerText = data.tanggal_daftar || 'N/A';
+                }
             })
-            .catch(error => console.error('Error fetching data: ', error));
+            .catch(error => {
+                console.error('Error fetching data: ', error);
+                alert('Error fetching data: ' + error);  // Tampilkan kesalahan kepada pengguna
+            });
     </script>
 </head>
 <body>
@@ -26,15 +34,14 @@
                 <ul>
                     <li><a href="DashboardUser.html" class="tbl-biru">Beranda</a></li>
                     <li><a href="profil.html" class="tbl-biru">Profil</a></li>
-                    <li><a href="#pertanyaan" class="tbl-biru">Pertanyaan</a></li>
-                    <li><a href="#artikel" class="tbl-biru">Artikel</a></li>
-                    <li><a href="../Login.html" class="tbl-biru">Log Out</a></li>
+                    <li><a href="../Pertanyaan Seputar Petani/Daftar.php" class="tbl-biru">Pertanyaan</a></li>
+                    <li><a href="../Artikel/showartikeluser.php" class="tbl-biru">Artikel</a></li>
+                    <li><a href="../Login/Login.html" class="tbl-biru">Log Out</a></li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- untuk profil -->
     <div class="wrapper">
         <section id="profil">
             <img src="petani2-removebg-preview.png"/>
