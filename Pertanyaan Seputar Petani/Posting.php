@@ -1,5 +1,5 @@
 <?php
-include 'config.php';
+include '../Login/config.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $judul = $_POST['judul'];
@@ -65,16 +65,16 @@ $conn->close();
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<head lang="en">
 <head> 
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Posting Pertanyaan</title>
+    <link rel="stylesheet" href="../Dashboard/style.css">
 </head>
 <style>
     body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
+    font-family: 'Poppins', sans-serif;
+    background-color: #fff;
     color: #333;
     margin: 0;
     padding: 0;
@@ -91,9 +91,9 @@ $conn->close();
 }
 
 h1 {
-    color: #6b8e23;
+    color: #364f6b;
     text-align: center;
-    font-family: 'Georgia', serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 form {
@@ -124,7 +124,7 @@ textarea {
 }
 
 button[type="submit"] {
-    background-color: #6b8e23;
+    background-color: #364f6b;
     color: white;
     padding: 10px 15px;
     border: none;
@@ -134,18 +134,48 @@ button[type="submit"] {
 }
 
 button[type="submit"]:hover {
-    background-color: #556b2f;
+    background-color: #364f6b;
 }
 
 .error-message {
     color: red;
     margin-bottom: 10px;
 }
+.top-users {
+         margin-top: 20px;
+        }
 
 </style>
+</head>
 <body>
-    <h1>Posting Pertanyaan</h1>
-    <form action="posting_pertanyaan.php" method="post" enctype="multipart/form-data">
+    <nav>
+        <div class="wrapper">
+            <div class="logo"><a href='../Dashboard/DashboardAdmin.html'>HALO PETANI</a></div>
+            <div class="menu">
+                <ul>
+                    <li><a href="../Dashboard/DashboardAdmin.html" class="tbl-biru">Beranda</a></li>
+                    <li><a href="../Dashboard/Profil.html" class="tbl-biru">Profil</a></li>
+                    <li><a href="Daftar.php" class="tbl-biru">Pertanyaan</a></li>
+                    <li><a href="../Pertanyaan Seputar Petani/Daftar.php" class="tbl-biru">Artikel</a></li>
+                    <li><a href="../Login/Login.html" class="tbl-biru">Log Out</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+    <nav>
+         <div class="wrapper">
+         <div class="logo"><a>Posting Pertanyaan</a></div>
+            <div class="menu">
+                <ul>
+                    <li><a href="Daftar.php" class="tbl-biru">Daftar Pertanyaan</a></li>
+                    <li><a href="Top_Ten.php" class="tbl-biru">Top Pengguna</a></li>
+                </ul>
+            </div>
+        </div>
+        </nav>
+    <div class="top-users">
+    <form action="posting.php" method="post" enctype="multipart/form-data">
         <label for="judul">Judul Pertanyaan:</label><br>
         <input type="text" id="judul" name="judul" required><br><br>
 
@@ -160,9 +190,42 @@ button[type="submit"]:hover {
         </select><br><br>
 
         <label for="foto">Unggah Foto:</label><br>
-        <input type="file" id="foto" name="foto" required><br><br>
+        <input type="file" id="foto" name="foto"><br><br>
 
         <button type="submit">Posting Pertanyaan</button>
     </form>
-</body>
+    </div>
+</div>
+</body><footer id="kontak">
+        <div class="wrapper">
+            <div class="footer-container">
+                <div class="footer-section">
+                    <h3>Halo Petani</h3>
+                    <p>Menyediakan layanan konsultasi berbayar selama 1 bulan</p>
+                </div>
+                <div class="footer-section">
+                    <h3>About</h3>
+                    <p>Website resmi yang menyediakan layanan untuk kepentingan petani</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p>Telp : 000000000101</p>
+                    <p>Jl. Badak dan kaki tiga</p>
+                    <p>Kode Pos: 666</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Social</h3>
+                    <p><b>YouTube:</b> Halo Petani</p>
+                </div>
+            </div>
+        </div>
+        </footer>
+    </div>
+    
+    <footer id="copyright">
+        <div class="wrapper">
+            &copy; 2024. <b>Halo Petani</b> All Rights Reserved.
+        </div>
+    </footer>
+
 </html>
