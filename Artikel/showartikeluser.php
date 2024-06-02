@@ -14,7 +14,7 @@
                 <ul>
                     <li><a href="../Dashboard/DashboardAdmin.html" class="tbl-biru">Beranda</a></li>
                     <li><a href="../Dashboard/Profil.html" class="tbl-biru">Profil</a></li>
-                    <li><a href="../Pertanyaan Seputar Petani/Daftaradmin.php" class="tbl-biru">Pertanyaan</a></li>
+                    <li><a href="../Pertanyaan Seputar Petani/Daftar.php" class="tbl-biru">Pertanyaan</a></li>
                     <li><a href="show_artikel.php" class="tbl-biru">Artikel</a></li>
                     <li><a href="../Login/Login.html" class="tbl-biru">Log Out</a></li>
                 </ul>
@@ -35,7 +35,33 @@
     </div>
 
     <section>
-        
+    <div class="container">
+    <?php
+    include '../Login/config.php';
+
+    // Query untuk mengambil data artikel terbaru
+    $query = "SELECT * FROM artikel ORDER BY tanggal_posting DESC ";
+    $result = mysqli_query($conn, $query);
+
+    // Periksa apakah query berhasil dieksekusi
+    if (!$result) {
+        echo "Query error: " . mysqli_error($conn);
+        exit();
+    }
+
+    // Ambil data dan tampilkan di web
+    while ($row = mysqli_fetch_assoc($result)) {
+        echo "<div>";
+        echo "<h2>" . $row['judul'] . "</h2>";
+        echo "<p>" . $row['konten'] . "</p>";
+        echo "<p>Tanggal Publikasi: " . $row['tanggal_posting'] . "</p>";
+        echo "</div>";
+    }
+
+    // Tutup koneksi
+    mysqli_close($conn);
+    ?>
+    </div>
     </section>
 
     <footer id="kontak">
