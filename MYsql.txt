@@ -105,3 +105,13 @@ create table laporan(
     foreign key (id_pengguna) references pengguna (id),
     foreign key (id_pertanyaan) references pertanyaan (id_pertanyaan),
     foreign key (id_jawaban) references jawaban (id_jawaban));
+
+create table artikel(
+    id_artikel int not null primary key auto_increment,
+    id_admin int not null,
+    judul varchar (100) not null,
+    konten TEXT,
+    tanggal_posting date not null,
+    kategori varchar(100),
+    rating int,
+    foreign key (id_admin) references admin (id_admin));
