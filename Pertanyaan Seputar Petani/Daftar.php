@@ -448,4 +448,35 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
     ?>
 </div>
 </body>
+<footer id="kontak">
+        <div class="wrapper">
+            <div class="footer-container">
+                <div class="footer-section">
+                    <h3>Halo Petani</h3>
+                    <p>Menyediakan layanan konsultasi berbayar selama 1 bulan</p>
+                </div>
+                <div class="footer-section">
+                    <h3>About</h3>
+                    <p>Website resmi yang menyediakan layanan untuk kepentingan petani</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p>Telp : 000000000101</p>
+                    <p>Jl. Badak dan kaki tiga</p>
+                    <p>Kode Pos: 666</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Social</h3>
+                    <p><b>YouTube:</b> Halo Petani</p>
+                </div>
+            </div>
+        </div>
+        </footer>
+    </div>
+    
+    <footer id="copyright">
+        <div class="wrapper">
+            &copy; 2024. <b>Halo Petani</b> All Rights Reserved.
+        </div>
+    </footer>
 </html>
