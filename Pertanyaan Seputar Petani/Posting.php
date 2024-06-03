@@ -1,6 +1,7 @@
 <?php
 session_start();
 include '../Login/config.php';
+date_default_timezone_set('Asia/Jakarta');
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
@@ -17,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $isi = $_POST['isi'];
     $kategori = $_POST['kategori'];
     $id_pengguna = $logged_in_user_id ;
-    $tanggal_posting = date('Y-m-d');
+    $tanggal_posting = date('Y-m-d : H:i:s');
     $foto = '';
 
     if (!empty($_FILES['foto']['name'])) {
