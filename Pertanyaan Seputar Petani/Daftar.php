@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $id_pertanyaan = $_POST['id_pertanyaan'];
         $isi_jawaban = $_POST['isi_jawaban'];
 
-        $stmt = $conn->prepare("INSERT INTO jawaban (id_pertanyaan, id_pengguna, isi_jawaban, tanggal_posting) VALUES (?, ?, ?, CURDATE())");
+        $stmt = $conn->prepare("INSERT INTO jawaban (id_pertanyaan, id_pengguna, isi_jawaban, tanggal_posting) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("iis", $id_pertanyaan, $logged_in_user_id, $isi_jawaban);
 
         if ($stmt->execute()) {
@@ -360,7 +360,7 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
             if ($result_jawaban->num_rows > 0) {
                 while ($jawaban = $result_jawaban->fetch_assoc()) {
                     echo "<div class='jawaban'>";
-                    echo "<strong>Username:</strong> " . htmlspecialchars($jawaban["jawaban_username"]) . "<br>";
+                    echo "<strong>Username :</strong> " . htmlspecialchars($jawaban["jawaban_username"]) . "<br>";
                     echo "<strong>Jawaban:</strong> " . htmlspecialchars($jawaban["isi_jawaban"]) . "<br>";
                     echo "<strong>Tanggal:</strong> " . htmlspecialchars($jawaban["tanggal_posting"]) . "<br>";
 
@@ -407,17 +407,19 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                     echo "</form>";
 
                     // Handle ratings
-                    echo "<form method='POST' class='rating-form'>";
-                    echo "<input type='hidden' name='id_jawaban' value='" . $jawaban["id_jawaban"] . "'>";
-                    echo "<input type='hidden' name='id_pengguna' value='$logged_in_user_id'>";
-                    echo "<div class='rating-container'>";
-                    for ($i = 1; $i <= 5; $i++) {
-                        echo "<button type='submit' name='rating' value='$i' class='star-button'>" . ($i <= round($average_rating) ? "★" : "☆") . "</button>";
-                    }
-                    echo "</div>";
-                    echo "</form>";
-                    
-                    echo "</div>"; // jawaban
+                     echo "<form method='POST' action='Daftar.php'>";
+                        echo "<input type='hidden' name='id_jawaban' value='" . $jawaban["id_jawaban"] . "'>";
+                        echo "<input type='hidden' name='id_pengguna' value='$logged_in_user_id'>";
+                        echo "<div class='rating'>";
+                        echo "<input type='radio' id='star5-" . $jawaban["id_jawaban"] . "' name='nilai' value='5'><label for='star5-" . $jawaban["id_jawaban"] . "'>★</label>";
+                        echo "<input type='radio' id='star4-" . $jawaban["id_jawaban"] . "' name='nilai' value='4'><label for='star4-" . $jawaban["id_jawaban"] . "'>★</label>";
+                        echo "<input type='radio' id='star3-" . $jawaban["id_jawaban"] . "' name='nilai' value='3'><label for='star3-" . $jawaban["id_jawaban"] . "'>★</label>";
+                        echo "<input type='radio' id='star2-" . $jawaban["id_jawaban"] . "' name='nilai' value='2'><label for='star2-" . $jawaban["id_jawaban"] . "'>★</label>";
+                        echo "<input type='radio' id='star1-" . $jawaban["id_jawaban"] . "' name='nilai' value='1'><label for='star1-" . $jawaban["id_jawaban"] . "'>★</label>";
+                        echo "</div>";
+                        echo "<input type='submit' value='Rate'>";
+                        echo "</form>";
+                        echo "</div>";
                 }
             } else {
                 echo "Belum ada jawaban.";
