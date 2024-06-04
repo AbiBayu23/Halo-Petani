@@ -398,6 +398,7 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
     if ($result_pertanyaan->num_rows > 0) {
         while ($pertanyaan = $result_pertanyaan->fetch_assoc()) {
             $id_pertanyaan = $pertanyaan['id_pertanyaan'];
+            
             echo "<strong>Username:</strong> " . htmlspecialchars($pertanyaan["username"]) . "<br>";
             echo "<strong>Tanggal:</strong> " . htmlspecialchars($pertanyaan["tanggal_posting"]) . "<br>";
             echo "<strong>Kategori:</strong> " . htmlspecialchars($pertanyaan["kategori"]) . "<br>";
@@ -442,6 +443,7 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
 
             if ($result_jawaban->num_rows > 0) {
                 while ($jawaban = $result_jawaban->fetch_assoc()) {
+                    $id_jawaban = $jawaban['id_jawaban'];
                     echo "<div class='jawaban'>";
                     echo "<strong>Username :</strong> " . htmlspecialchars($jawaban["jawaban_username"]) . "<br>";
                     echo "<strong>Tanggal:</strong> " . htmlspecialchars($jawaban["tanggal_posting"]) . "<br>";
@@ -475,6 +477,11 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                     echo "</form>";
                         echo "<input type='hidden' name='id_jawaban' value='" . $jawaban["id_jawaban"] . "'>";
                         echo "<input type='hidden' name='id_pengguna' value='$logged_in_user_id'>";
+                        
+
+                        echo "<form method='post' action=''>";
+                        echo "<input type='hidden' name='id_jawaban' value='" . $id_jawaban . "'>";
+                        echo "<input type='submit' name='hapus_jawaban' value='Hapus Jawaban'>";
                         echo "</div>";
                         
                         
