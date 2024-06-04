@@ -55,42 +55,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 $sql_pertanyaan = "SELECT pertanyaan.*, pengguna.username FROM pertanyaan JOIN pengguna ON pertanyaan.id_pengguna = pengguna.id WHERE 1 $whereClause ORDER BY tanggal_posting DESC";
 $result_pertanyaan = $conn->query($sql_pertanyaan);
 
-    if (isset($_POST['id_jawaban']) && isset($_POST['nilai']) && isset($_POST['id_pengguna'])) {
-        $id_jawaban = $_POST['id_jawaban'];
-        $nilai = $_POST['nilai'];
-        $id_pengguna = $_POST['id_pengguna'];
-
-        $sql_check_rating = "SELECT * FROM rating_jawaban WHERE id_jawaban = ? AND id_pengguna = ?";
-        $stmt_check_rating = $conn->prepare($sql_check_rating);
-        $stmt_check_rating->bind_param("ii", $id_jawaban, $id_pengguna);
-        $stmt_check_rating->execute();
-        $result_check_rating = $stmt_check_rating->get_result();
-
-        if ($result_check_rating->num_rows > 0) {
-            $stmt_update_rating = $conn->prepare("UPDATE rating_jawaban SET nilai = ?, tanggal_rating = CURDATE() WHERE id_jawaban = ? AND id_pengguna = ?");
-            $stmt_update_rating->bind_param("iii", $nilai, $id_jawaban, $id_pengguna);
-
-            if ($stmt_update_rating->execute()) {
-                echo "Rating berhasil diperbarui!";
-            } else {
-                echo "Error: " . $stmt_update_rating->error;
-            }
-            $stmt_update_rating->close();
-        } else {
-            $stmt_insert_rating = $conn->prepare("INSERT INTO rating_jawaban (id_jawaban, id_pengguna, nilai, tanggal_rating) VALUES (?, ?, ?, CURDATE())");
-            $stmt_insert_rating->bind_param("iii", $id_jawaban, $id_pengguna, $nilai);
-
-            if ($stmt_insert_rating->execute()) {
-                echo "Rating berhasil diberikan!";
-            } else {
-                echo "Error: " . $stmt_insert_rating->error;
-            }
-            $stmt_insert_rating;
-        }
-
-        $stmt_check_rating;
-    }
-
     if (isset($_POST['like']) && isset($_POST['id_jawaban']) && isset($_POST['id_pengguna'])) {
         $id_jawaban = $_POST['id_jawaban'];
         $id_pengguna = $_POST['id_pengguna'];
@@ -260,44 +224,6 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
             margin: 10px 0;
         }
 
-        .rating {
-            direction: rtl;
-            unicode-bidi: bidi-override;
-            font-size: 1.5em;
-            display: inline-block;
-        }
-
-        .rating input {
-            display: none;
-        }
-
-        .rating label {
-            color: #ddd;
-            float: right;
-        }
-
-        .rating input:checked~label,
-        .rating input:checked~label~label {
-            color: #f5b301;
-        }
-
-        .rating label:hover,
-        .rating label:hover~label {
-            color: #ffdd44;
-        }
-
-        .result-rating {
-            color: #f5b301;
-            font-size: 1.5em;
-        }
-
-        .result-rating .star {
-            color: #ddd;
-        }
-
-        .result-rating .filled {
-            color: #f5b301;
-        }
         textarea {
             width: 100%;
             height: 100px;
@@ -383,13 +309,6 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
         echo "<script>alert('" . addslashes($laporanPesan) . "');</script>";
     }
 
-    function display_stars($rating) {
-        $stars = "";
-        for ($i = 1; $i <= 5; $i++) {
-            $stars .= ($i <= $rating) ? "<span class='star filled'>★</span>" : "<span class='star'>★</span>";
-        }
-        return $stars;
-    }
 
     if ($result_pertanyaan->num_rows > 0) {
         while ($pertanyaan = $result_pertanyaan->fetch_assoc()) {
@@ -448,15 +367,6 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                     echo "<strong>Jawaban:</strong> " . htmlspecialchars($jawaban["isi_jawaban"]) . "<br>";
                     
 
-                    $sql_avg_rating = "SELECT AVG(nilai) as average_rating FROM rating_jawaban WHERE id_jawaban = " . $jawaban["id_jawaban"];
-                    $result_avg_rating = $conn->query($sql_avg_rating);
-
-                    if ($result_avg_rating->num_rows > 0) {
-                        $row_avg_rating = $result_avg_rating->fetch_assoc();
-                        $average_rating = $row_avg_rating['average_rating'];
-                        echo "<div class='result-rating'>" . display_stars(round($average_rating)) . " (" . round($average_rating, 2) . ")</div>";
-                    }
-
                     $sql_quality_point = "SELECT COUNT(*) as likes FROM quality_point WHERE id_jawaban = " . $jawaban["id_jawaban"];
                     $result_quality_point = $conn->query($sql_quality_point);
                     $likes = 0;
@@ -488,20 +398,6 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                         echo "</div>";
                     }
                     echo "</form>";
-
-               
-                     echo "<form method='POST' action='Daftar.php'>";
-                        echo "<input type='hidden' name='id_jawaban' value='" . $jawaban["id_jawaban"] . "'>";
-                        echo "<input type='hidden' name='id_pengguna' value='$logged_in_user_id'>";
-                        echo "<div class='rating'>";
-                        echo "<input type='radio' id='star5-" . $jawaban["id_jawaban"] . "' name='nilai' value='5'><label for='star5-" . $jawaban["id_jawaban"] . "'>★</label>";
-                        echo "<input type='radio' id='star4-" . $jawaban["id_jawaban"] . "' name='nilai' value='4'><label for='star4-" . $jawaban["id_jawaban"] . "'>★</label>";
-                        echo "<input type='radio' id='star3-" . $jawaban["id_jawaban"] . "' name='nilai' value='3'><label for='star3-" . $jawaban["id_jawaban"] . "'>★</label>";
-                        echo "<input type='radio' id='star2-" . $jawaban["id_jawaban"] . "' name='nilai' value='2'><label for='star2-" . $jawaban["id_jawaban"] . "'>★</label>";
-                        echo "<input type='radio' id='star1-" . $jawaban["id_jawaban"] . "' name='nilai' value='1'><label for='star1-" . $jawaban["id_jawaban"] . "'>★</label>";
-                        echo "</div>";
-                        echo "<input type='submit' value='Rate'>";
-                        echo "</form>";
                         ?>
                         <button onclick="tampilkanFormLaporan(<?php echo $jawaban['id_jawaban']; ?>)">Laporkan</button>
                         <form id="form-laporan-<?php echo $jawaban['id_jawaban']; ?>" method="POST" style="display: none;">
