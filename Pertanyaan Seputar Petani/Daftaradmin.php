@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $id_pertanyaan = $_POST['id_pertanyaan'];
         $isi_jawaban = $_POST['isi_jawaban'];
 
-        $stmt = $conn->prepare("INSERT INTO jawaban (id_pertanyaan, id_pengguna, isi_jawaban, tanggal_posting) VALUES (?, ?, ?, CURDATE())");
+        $stmt = $conn->prepare("INSERT INTO jawaban (id_pertanyaan, id_pengguna, isi_jawaban, tanggal_posting) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("iis", $id_pertanyaan, $logged_in_user_id, $isi_jawaban);
 
         if ($stmt->execute()) {
@@ -86,10 +86,10 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
             } else {
                 echo "Error: " . $stmt_insert_rating->error;
             }
-            $stmt_insert_rating->close();
+            $stmt_insert_rating;
         }
 
-        $stmt_check_rating->close();
+        $stmt_check_rating;
     }
 
     if (isset($_POST['like']) && isset($_POST['id_jawaban']) && isset($_POST['id_pengguna'])) {
@@ -113,7 +113,7 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
         } else {
         }
 
-        $stmt_check_quality->close();
+        $stmt_check_quality;
     }
 
     if (isset($_POST['unlike']) && isset($_POST['id_jawaban']) && isset($_POST['id_pengguna'])) {
@@ -128,21 +128,115 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
             $stmt_delete_quality->error;
         }
 
-        $stmt_delete_quality->close();
+        $stmt_delete_quality;
+    }
+
+    if (isset($_POST['like']) && isset($_POST['id_pertanyaan']) && isset($_POST['id_pengguna'])) {
+        $id_pertanyaan = $_POST['id_pertanyaan'];
+        $id_pengguna = $_POST['id_pengguna'];
+
+        $sql_check_quality = "SELECT * FROM quality_point WHERE id_pertanyaan = ? AND id_pengguna = ?";
+        $stmt_check_quality = $conn->prepare($sql_check_quality);
+        $stmt_check_quality->bind_param("ii", $id_pertanyaan, $id_pengguna);
+        $stmt_check_quality->execute();
+        $result_check_quality = $stmt_check_quality->get_result();
+
+        if ($result_check_quality->num_rows == 0) {
+            $stmt_quality = $conn->prepare("INSERT INTO quality_point (id_pengguna, id_pertanyaan, jumlah_point, tanggal_pemberian) VALUES (?, ?, 2, CURDATE())");
+            $stmt_quality->bind_param("ii", $id_pengguna, $id_pertanyaan);
+
+            if ($stmt_quality->execute()) {
+            } else {
+                $stmt_quality->error;
+            }
+        } else {
+        }
+
+        $stmt_check_quality;
+    }
+
+    if (isset($_POST['unlike']) && isset($_POST['id_pertanyaan']) && isset($_POST['id_pengguna'])) {
+        $id_pertanyaan = $_POST['id_pertanyaan'];
+        $id_pengguna = $_POST['id_pengguna'];
+
+        $stmt_delete_quality = $conn->prepare("DELETE FROM quality_point WHERE id_pertanyaan = ? AND id_pengguna = ?");
+        $stmt_delete_quality->bind_param("ii", $id_pertanyaan, $id_pengguna);
+
+        if ($stmt_delete_quality->execute()) {
+        } else {
+            $stmt_delete_quality->error;
+        }
+
+        $stmt_delete_quality;
     }
 
     if (isset($_POST['id_pengguna']) && isset($_POST['alasan_laporan'])) {
         $id_pengguna = $_POST['id_pengguna'];
         $id_pertanyaan = isset($_POST['id_pertanyaan']) ? $_POST['id_pertanyaan'] : NULL;
+        $alasan_laporan = $_POST['alasan_laporan'];
+
+        $stmt = $conn->prepare("INSERT INTO laporan (id_pengguna, id_pertanyaan, alasan_laporan, tanggal_laporan) VALUES (?, ?, ?, ?, CURDATE())");
+        $stmt->bind_param("iiis", $id_pengguna, $id_pertanyaan, $alasan_laporan);
+        $stmt->execute();
+
+        $laporanPesan = "Laporan berhasil dikirim!";
+    }
+
+    if (isset($_POST['id_pengguna']) && isset($_POST['alasan_laporan'])) {
+        $id_pengguna = $_POST['id_pengguna'];
         $id_jawaban = isset($_POST['id_jawaban']) ? $_POST['id_jawaban'] : NULL;
         $alasan_laporan = $_POST['alasan_laporan'];
 
-        $stmt = $conn->prepare("INSERT INTO laporan (id_pengguna, id_pertanyaan, id_jawaban, alasan_laporan, tanggal_laporan) VALUES (?, ?, ?, ?, CURDATE())");
-        $stmt->bind_param("iiis", $id_pengguna, $id_pertanyaan, $id_jawaban, $alasan_laporan);
+        $stmt = $conn->prepare("INSERT INTO laporan (id_pengguna, id_jawaban, alasan_laporan, tanggal_laporan) VALUES (?, ?, ?, ?, CURDATE())");
+        $stmt->bind_param("iiis", $id_pengguna, $id_jawaban, $alasan_laporan);
         $stmt->execute();
         $stmt->close();
 
         $laporanPesan = "Laporan berhasil dikirim!";
+    }
+
+    if (isset($_POST['hapus_pertanyaan']) && isset($_POST['id_pertanyaan'])) {
+        $id_pertanyaan = $_POST['id_pertanyaan'];
+
+        $conn->begin_transaction();
+
+        try {
+            $stmt = $conn->prepare("DELETE FROM quality_point WHERE id_pertanyaan = ?");
+            $stmt->bind_param("i", $id_pertanyaan);
+            if (!$stmt->execute()) {
+                throw new Exception("Error: " . $stmt->error);
+            }
+            $stmt = $conn->prepare("DELETE FROM jawaban WHERE id_pertanyaan = ?");
+            $stmt->bind_param("i", $id_pertanyaan);
+            if (!$stmt->execute()) {
+                throw new Exception("Error: " . $stmt->error);
+            }
+            $stmt = $conn->prepare("DELETE FROM pertanyaan WHERE id_pertanyaan = ?");
+            $stmt->bind_param("i", $id_pertanyaan);
+            if (!$stmt->execute()) {
+                throw new Exception("Error: " . $stmt->error);
+            }
+            $conn->commit();
+            echo "Pertanyaan berhasil dihapus!";
+        } catch (Exception $e) {
+            $conn->rollback();
+            echo $e->getMessage();
+        }
+        $stmt->close();
+    }
+
+    if (isset($_POST['hapus_jawaban']) && isset($_POST['id_jawaban'])) {
+        $id_jawaban = $_POST['id_jawaban'];
+
+        $stmt = $conn->prepare("DELETE FROM jawaban WHERE id_jawaban = ?");
+        $stmt->bind_param("i", $id_jawaban);
+
+        if ($stmt->execute()) {
+            echo "Jawaban berhasil dihapus!";
+        } else {
+            echo "Error: " . $stmt->error;
+        }
+        $stmt->close();
     }
 
 
@@ -292,8 +386,8 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
 </head>
 <body>
 <nav>
-    <div class="wrapper">
-    <div class="logo"><a href='../Dashboard/DashboardAdmin.html'>HALO PETANI</a></div>
+        <div class="wrapper">
+            <div class="logo"><a href='../Dashboard/DashboardAdmin.html'>HALO PETANI</a></div>
             <div class="menu">
                 <ul>
                 <li><a href="../Dashboard/DashboardAdmin.html" class="tbl-biru">Beranda</a></li>
@@ -301,24 +395,23 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                     <li><a href="../Artikel/show_artikel.php" class="tbl-biru">Artikel</a></li>
                     <li><a href="#artikel" class="tbl-biru">Laporan</a></li>
                     <li><a href="../Login/Login.html" class="tbl-biru">Log Out</a></li>
-            </ul>
-        </div>
-    </div>
-</nav>
-<div class="container">
-    <nav>
-        <div class="wrapper">
-            <div class="logo"><a>Daftar Pertanyaan</a></div>
-            <div class="menu">
-                <ul>
-                    <li><a href="Posting.php" class="tbl-biru">Posting Pertanyaan</a></li>
-                    <li><a href="Top_Ten.php" class="tbl-biru">Top Pengguna</a></li>
                 </ul>
             </div>
         </div>
     </nav>
+     
+    <div class="container">
+    <nav>
+        <div class="wrapper">
+            <div class="logo"><a> Top Pengguna</a></div>
+                <div class="menu">
+                    <ul>
+                        <li><a href="Daftaradmin.php" class="tbl-biru">Daftar Pertanyaan</a></li>
+                    </ul>
+                </div>
+    </nav>
     <div class="top-users">
-        <form method="GET" action="Daftar.php">
+        <form method="GET" action="Daftaradmin.php">
             <input type="text" name="keyword" placeholder="Cari pertanyaan...">
             <select name="kategori">
                 <option value="">Semua Kategori</option>
@@ -344,15 +437,45 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
 
     if ($result_pertanyaan->num_rows > 0) {
         while ($pertanyaan = $result_pertanyaan->fetch_assoc()) {
+            $id_pertanyaan = $pertanyaan['id_pertanyaan'];
             echo "<strong>Username:</strong> " . htmlspecialchars($pertanyaan["username"]) . "<br>";
+            echo "<strong>Tanggal:</strong> " . htmlspecialchars($pertanyaan["tanggal_posting"]) . "<br>";
+            echo "<strong>Kategori:</strong> " . htmlspecialchars($pertanyaan["kategori"]) . "<br>";
             echo "<div class='pertanyaan'>";
             echo "<strong>Pertanyaan:</strong> " . htmlspecialchars($pertanyaan["isi_pertanyaan"]) . "<br>";
-            echo "<strong>Tanggal:</strong> " . htmlspecialchars($pertanyaan["tanggal_posting"]) . "<br>";
             if (!empty($pertanyaan["foto"])) {
                 $foto_base64 = base64_encode($pertanyaan["foto"]);
                 echo "<strong>Foto:</strong><br><img src='data:image/jpeg;base64,{$foto_base64}' alt='Foto Pertanyaan' class='image'><br>";
             }
-            echo "<strong>Kategori:</strong> " . htmlspecialchars($pertanyaan["kategori"]) . "<br>";
+            
+            $sql_quality_point = "SELECT COUNT(*) as likes FROM quality_point WHERE id_pertanyaan = " . $pertanyaan["id_pertanyaan"];
+                $result_quality_point = $conn->query($sql_quality_point);
+                $likes = 0;
+                if ($result_quality_point && $result_quality_point->num_rows > 0) {
+                    $row_quality_point = $result_quality_point->fetch_assoc();
+                    $likes = $row_quality_point['likes'];
+                }
+                    
+                $stmt_check_quality = $conn->prepare("SELECT COUNT(*) as num_likes FROM quality_point WHERE id_pertanyaan = ? AND id_pengguna = ?");
+                $stmt_check_quality->bind_param("ii", $pertanyaan["id_pertanyaan"], $logged_in_user_id);
+                $stmt_check_quality->execute();
+                $result_check_quality = $stmt_check_quality->get_result();
+
+                echo "<form method='POST' class='like-form'>";
+                echo "<input type='hidden' name='id_pertanyaan' value='" . $pertanyaan["id_pertanyaan"] . "'>";
+                echo "<input type='hidden' name='id_pengguna' value='$logged_in_user_id'>";
+                    
+                if ($result_check_quality) {
+                    $row_check_quality = $result_check_quality->fetch_assoc();
+                    $num_likes = $row_check_quality['num_likes'];
+
+                    echo "<div id='like-container-" . $pertanyaan["id_pertanyaan"] . "'>";
+                    echo "<span class='like-count'>" . $likes . " likes</span>";
+                    echo "</div>";
+                    }
+                echo "</form>";
+        
+            
 
             $sql_jawaban = "SELECT jawaban.*, pengguna.username AS jawaban_username FROM jawaban JOIN pengguna ON jawaban.id_pengguna = pengguna.id WHERE id_pertanyaan = " . $pertanyaan["id_pertanyaan"];
             $result_jawaban = $conn->query($sql_jawaban);
@@ -360,9 +483,10 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
             if ($result_jawaban->num_rows > 0) {
                 while ($jawaban = $result_jawaban->fetch_assoc()) {
                     echo "<div class='jawaban'>";
-                    echo "<strong>Username:</strong> " . htmlspecialchars($jawaban["jawaban_username"]) . "<br>";
-                    echo "<strong>Jawaban:</strong> " . htmlspecialchars($jawaban["isi_jawaban"]) . "<br>";
+                    echo "<strong>Username :</strong> " . htmlspecialchars($jawaban["jawaban_username"]) . "<br>";
                     echo "<strong>Tanggal:</strong> " . htmlspecialchars($jawaban["tanggal_posting"]) . "<br>";
+                    echo "<strong>Jawaban:</strong> " . htmlspecialchars($jawaban["isi_jawaban"]) . "<br>";
+                    
 
                     $sql_avg_rating = "SELECT AVG(nilai) as average_rating FROM rating_jawaban WHERE id_jawaban = " . $jawaban["id_jawaban"];
                     $result_avg_rating = $conn->query($sql_avg_rating);
@@ -372,8 +496,6 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                         $average_rating = $row_avg_rating['average_rating'];
                         echo "<div class='result-rating'>" . display_stars(round($average_rating)) . " (" . round($average_rating, 2) . ")</div>";
                     }
-
-                    // Handle likes
                     $sql_quality_point = "SELECT COUNT(*) as likes FROM quality_point WHERE id_jawaban = " . $jawaban["id_jawaban"];
                     $result_quality_point = $conn->query($sql_quality_point);
                     $likes = 0;
@@ -396,49 +518,24 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                         $num_likes = $row_check_quality['num_likes'];
 
                         echo "<div id='like-container-" . $jawaban["id_jawaban"] . "'>";
-                        if ($num_likes == 0) {
-                            echo "<button type='submit' name='like' value='like' class='like-button' data-jawaban-id='" . $jawaban["id_jawaban"] . "'>Like &#128077;</button>";
-                        } else {
-                            echo "<button type='submit' name='unlike' value='unlike' class='unlike-button' data-jawaban-id='" . $jawaban["id_jawaban"] . "'>Unlike &#128078;</button>";
-                        }
                         echo "<span class='like-count'>" . $likes . " likes</span>";
                         echo "</div>";
                     }
                     echo "</form>";
-
-                    // Handle ratings
-                    echo "<form method='POST' class='rating-form'>";
-                    echo "<input type='hidden' name='id_jawaban' value='" . $jawaban["id_jawaban"] . "'>";
-                    echo "<input type='hidden' name='id_pengguna' value='$logged_in_user_id'>";
-                    echo "<div class='rating-container'>";
-                    for ($i = 1; $i <= 5; $i++) {
-                        echo "<button type='submit' name='rating' value='$i' class='star-button'>" . ($i <= round($average_rating) ? "★" : "☆") . "</button>";
-                    }
-                    echo "</div>";
-                    echo "</form>";
-                    
-                    echo "</div>"; // jawaban
+                        echo "<input type='hidden' name='id_jawaban' value='" . $jawaban["id_jawaban"] . "'>";
+                        echo "<input type='hidden' name='id_pengguna' value='$logged_in_user_id'>";
+                        echo "</div>";
+                        
+                        
                 }
+                
             } else {
                 echo "Belum ada jawaban.";
             }
-            ?>
-            <div class="post-answer">
-                <h3>Berikan Jawaban:</h3>
-                <form method="POST">
-                    <input type="hidden" name="id_pertanyaan" value="<?php echo $pertanyaan['id_pertanyaan']; ?>">
-                    <textarea name="isi_jawaban" required></textarea>
-                    <input type="submit" value="Post Jawaban">
-                </form>
-            </div>
-            <button onclick="tampilkanFormLaporan(<?php echo $pertanyaan['id_pertanyaan']; ?>)">Laporkan</button>
-            <form id="form-laporan-<?php echo $pertanyaan['id_pertanyaan']; ?>" method="POST" style="display: none;">
-                <input type="hidden" name="id_pertanyaan" value="<?php echo $pertanyaan['id_pertanyaan']; ?>">
-                <textarea name="laporan" placeholder="Deskripsikan laporan Anda"></textarea>
-                <input type="submit" name="submit_laporan" value="Kirim Laporan">
-            </form>
-            <?php
-            echo "</div>"; // pertanyaan
+            echo "<form method='post' action=''>";
+            echo "<input type='hidden' name='id_pertanyaan' value='" . $id_pertanyaan . "'>";
+            echo "<input type='submit' name='hapus_pertanyaan' value='Hapus Pertanyaan'>";
+            echo "</div>";
         }
     } else {
         echo "Belum ada pertanyaan.";
@@ -446,4 +543,35 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
     ?>
 </div>
 </body>
+<footer id="kontak">
+        <div class="wrapper">
+            <div class="footer-container">
+                <div class="footer-section">
+                    <h3>Halo Petani</h3>
+                    <p>Menyediakan layanan konsultasi berbayar selama 1 bulan</p>
+                </div>
+                <div class="footer-section">
+                    <h3>About</h3>
+                    <p>Website resmi yang menyediakan layanan untuk kepentingan petani</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p>Telp : 000000000101</p>
+                    <p>Jl. Badak dan kaki tiga</p>
+                    <p>Kode Pos: 666</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Social</h3>
+                    <p><b>YouTube:</b> Halo Petani</p>
+                </div>
+            </div>
+        </div>
+        </footer>
+    </div>
+    
+    <footer id="copyright">
+        <div class="wrapper">
+            &copy; 2024. <b>Halo Petani</b> All Rights Reserved.
+        </div>
+    </footer>
 </html>
