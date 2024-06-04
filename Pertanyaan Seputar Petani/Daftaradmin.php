@@ -2,14 +2,6 @@
 session_start();
 include '../Login/config.php';
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
-    header('Location: ../Login/Login.html');
-    exit;
-}
-
-$logged_in_user_id = $_SESSION['user_id'];
-$logged_in_username = $_SESSION['username'];
 
 $laporanPesan = "";
 $whereClause = "";
@@ -56,41 +48,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 $sql_pertanyaan = "SELECT pertanyaan.*, pengguna.username FROM pertanyaan JOIN pengguna ON pertanyaan.id_pengguna = pengguna.id WHERE 1 $whereClause ORDER BY tanggal_posting DESC";
 $result_pertanyaan = $conn->query($sql_pertanyaan);
 
-    if (isset($_POST['id_jawaban']) && isset($_POST['nilai']) && isset($_POST['id_pengguna'])) {
-        $id_jawaban = $_POST['id_jawaban'];
-        $nilai = $_POST['nilai'];
-        $id_pengguna = $_POST['id_pengguna'];
-
-        $sql_check_rating = "SELECT * FROM rating_jawaban WHERE id_jawaban = ? AND id_pengguna = ?";
-        $stmt_check_rating = $conn->prepare($sql_check_rating);
-        $stmt_check_rating->bind_param("ii", $id_jawaban, $id_pengguna);
-        $stmt_check_rating->execute();
-        $result_check_rating = $stmt_check_rating->get_result();
-
-        if ($result_check_rating->num_rows > 0) {
-            $stmt_update_rating = $conn->prepare("UPDATE rating_jawaban SET nilai = ?, tanggal_rating = CURDATE() WHERE id_jawaban = ? AND id_pengguna = ?");
-            $stmt_update_rating->bind_param("iii", $nilai, $id_jawaban, $id_pengguna);
-
-            if ($stmt_update_rating->execute()) {
-                echo "Rating berhasil diperbarui!";
-            } else {
-                echo "Error: " . $stmt_update_rating->error;
-            }
-            $stmt_update_rating->close();
-        } else {
-            $stmt_insert_rating = $conn->prepare("INSERT INTO rating_jawaban (id_jawaban, id_pengguna, nilai, tanggal_rating) VALUES (?, ?, ?, CURDATE())");
-            $stmt_insert_rating->bind_param("iii", $id_jawaban, $id_pengguna, $nilai);
-
-            if ($stmt_insert_rating->execute()) {
-                echo "Rating berhasil diberikan!";
-            } else {
-                echo "Error: " . $stmt_insert_rating->error;
-            }
-            $stmt_insert_rating;
-        }
-
-        $stmt_check_rating;
-    }
 
     if (isset($_POST['like']) && isset($_POST['id_jawaban']) && isset($_POST['id_pengguna'])) {
         $id_jawaban = $_POST['id_jawaban'];
@@ -201,21 +158,48 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
         $conn->begin_transaction();
 
         try {
+            // Delete laporan related to jawaban of the pertanyaan
+            $stmt = $conn->prepare("DELETE laporan FROM laporan JOIN jawaban ON laporan.id_jawaban = jawaban.id_jawaban WHERE jawaban.id_pertanyaan = ?");
+            $stmt->bind_param("i", $id_pertanyaan);
+            if (!$stmt->execute()) {
+                throw new Exception("Error: " . $stmt->error);
+            }
+    
+            // Delete laporan related to the pertanyaan
+            $stmt = $conn->prepare("DELETE FROM laporan WHERE id_pertanyaan = ?");
+            $stmt->bind_param("i", $id_pertanyaan);
+            if (!$stmt->execute()) {
+                throw new Exception("Error: " . $stmt->error);
+            }
+    
+            // Delete quality_point related to jawaban of the pertanyaan
+            $stmt = $conn->prepare("DELETE quality_point FROM quality_point JOIN jawaban ON quality_point.id_jawaban = jawaban.id_jawaban WHERE jawaban.id_pertanyaan = ?");
+            $stmt->bind_param("i", $id_pertanyaan);
+            if (!$stmt->execute()) {
+                throw new Exception("Error: " . $stmt->error);
+            }
+    
+            // Delete quality_point related to the pertanyaan
             $stmt = $conn->prepare("DELETE FROM quality_point WHERE id_pertanyaan = ?");
             $stmt->bind_param("i", $id_pertanyaan);
             if (!$stmt->execute()) {
                 throw new Exception("Error: " . $stmt->error);
             }
+    
+            // Delete jawaban related to the pertanyaan
             $stmt = $conn->prepare("DELETE FROM jawaban WHERE id_pertanyaan = ?");
             $stmt->bind_param("i", $id_pertanyaan);
             if (!$stmt->execute()) {
                 throw new Exception("Error: " . $stmt->error);
             }
+    
+            // Delete the pertanyaan
             $stmt = $conn->prepare("DELETE FROM pertanyaan WHERE id_pertanyaan = ?");
             $stmt->bind_param("i", $id_pertanyaan);
             if (!$stmt->execute()) {
                 throw new Exception("Error: " . $stmt->error);
             }
+    
             $conn->commit();
             echo "Pertanyaan berhasil dihapus!";
         } catch (Exception $e) {
@@ -224,17 +208,38 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
         }
         $stmt->close();
     }
-
     if (isset($_POST['hapus_jawaban']) && isset($_POST['id_jawaban'])) {
         $id_jawaban = $_POST['id_jawaban'];
-
-        $stmt = $conn->prepare("DELETE FROM jawaban WHERE id_jawaban = ?");
-        $stmt->bind_param("i", $id_jawaban);
-
-        if ($stmt->execute()) {
+    
+        $conn->begin_transaction();
+    
+        try {
+            // Delete laporan related to the jawaban
+            $stmt = $conn->prepare("DELETE FROM laporan WHERE id_jawaban = ?");
+            $stmt->bind_param("i", $id_jawaban);
+            if (!$stmt->execute()) {
+                throw new Exception("Error: " . $stmt->error);
+            }
+    
+            // Delete quality_point related to the jawaban
+            $stmt = $conn->prepare("DELETE FROM quality_point WHERE id_jawaban = ?");
+            $stmt->bind_param("i", $id_jawaban);
+            if (!$stmt->execute()) {
+                throw new Exception("Error: " . $stmt->error);
+            }
+    
+            // Delete the jawaban
+            $stmt = $conn->prepare("DELETE FROM jawaban WHERE id_jawaban = ?");
+            $stmt->bind_param("i", $id_jawaban);
+            if (!$stmt->execute()) {
+                throw new Exception("Error: " . $stmt->error);
+            }
+    
+            $conn->commit();
             echo "Jawaban berhasil dihapus!";
-        } else {
-            echo "Error: " . $stmt->error;
+        } catch (Exception $e) {
+            $conn->rollback();
+            echo $e->getMessage();
         }
         $stmt->close();
     }
@@ -305,44 +310,6 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
             margin: 10px 0;
         }
 
-        .rating {
-            direction: rtl;
-            unicode-bidi: bidi-override;
-            font-size: 1.5em;
-            display: inline-block;
-        }
-
-        .rating input {
-            display: none;
-        }
-
-        .rating label {
-            color: #ddd;
-            float: right;
-        }
-
-        .rating input:checked~label,
-        .rating input:checked~label~label {
-            color: #f5b301;
-        }
-
-        .rating label:hover,
-        .rating label:hover~label {
-            color: #ffdd44;
-        }
-
-        .result-rating {
-            color: #f5b301;
-            font-size: 1.5em;
-        }
-
-        .result-rating .star {
-            color: #ddd;
-        }
-
-        .result-rating .filled {
-            color: #f5b301;
-        }
         textarea {
             width: 100%;
             height: 100px;
@@ -403,10 +370,10 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
     <div class="container">
     <nav>
         <div class="wrapper">
-            <div class="logo"><a> Top Pengguna</a></div>
+            <div class="logo"><a> Daftar Pertanyaan</a></div>
                 <div class="menu">
                     <ul>
-                        <li><a href="Daftaradmin.php" class="tbl-biru">Daftar Pertanyaan</a></li>
+                        <li><a href="Toptenadmin.php" class="tbl-biru">Top Ten</a></li>
                     </ul>
                 </div>
     </nav>
@@ -427,13 +394,6 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
         echo "<script>alert('" . addslashes($laporanPesan) . "');</script>";
     }
 
-    function display_stars($rating) {
-        $stars = "";
-        for ($i = 1; $i <= 5; $i++) {
-            $stars .= ($i <= $rating) ? "<span class='star filled'>★</span>" : "<span class='star'>★</span>";
-        }
-        return $stars;
-    }
 
     if ($result_pertanyaan->num_rows > 0) {
         while ($pertanyaan = $result_pertanyaan->fetch_assoc()) {
@@ -487,15 +447,6 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                     echo "<strong>Tanggal:</strong> " . htmlspecialchars($jawaban["tanggal_posting"]) . "<br>";
                     echo "<strong>Jawaban:</strong> " . htmlspecialchars($jawaban["isi_jawaban"]) . "<br>";
                     
-
-                    $sql_avg_rating = "SELECT AVG(nilai) as average_rating FROM rating_jawaban WHERE id_jawaban = " . $jawaban["id_jawaban"];
-                    $result_avg_rating = $conn->query($sql_avg_rating);
-
-                    if ($result_avg_rating->num_rows > 0) {
-                        $row_avg_rating = $result_avg_rating->fetch_assoc();
-                        $average_rating = $row_avg_rating['average_rating'];
-                        echo "<div class='result-rating'>" . display_stars(round($average_rating)) . " (" . round($average_rating, 2) . ")</div>";
-                    }
                     $sql_quality_point = "SELECT COUNT(*) as likes FROM quality_point WHERE id_jawaban = " . $jawaban["id_jawaban"];
                     $result_quality_point = $conn->query($sql_quality_point);
                     $likes = 0;
