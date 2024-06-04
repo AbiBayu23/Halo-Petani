@@ -1,7 +1,7 @@
 <?php
 session_start();
 include '../Login/config.php';
-
+date_default_timezone_set('Asia/Jakarta');
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
     header('Location: ../Login/Login.html');
@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $id_pertanyaan = $_POST['id_pertanyaan'];
         $isi_jawaban = $_POST['isi_jawaban'];
 
-        $stmt = $conn->prepare("INSERT INTO jawaban (id_pertanyaan, id_pengguna, isi_jawaban, tanggal_posting) VALUES (?, ?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO jawaban (id_pertanyaan, id_pengguna, isi_jawaban, tanggal_posting) VALUES (?, ?, ?,  CURDATE())");
         $stmt->bind_param("iis", $id_pertanyaan, $logged_in_user_id, $isi_jawaban);
 
         if ($stmt->execute()) {
