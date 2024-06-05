@@ -1,161 +1,13 @@
-<?php
-session_start();
-include '../Login/config.php';
-date_default_timezone_set('Asia/Jakarta');
 
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
-    header('Location: ../Login/Login.html');
-    exit;
-}
-
-$logged_in_user_id = $_SESSION['user_id'];
-$logged_in_username = $_SESSION['username'];
-$keyword = "";
-
-$laporanPesan = "";
-$whereClause = "";
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['id_pertanyaan']) && isset($_POST['isi_jawaban'])) {
-        $id_pertanyaan = $_POST['id_pertanyaan'];
-        $isi_jawaban = $_POST['isi_jawaban'];
-
-        $stmt = $conn->prepare("INSERT INTO jawaban (id_pertanyaan, id_pengguna, isi_jawaban, tanggal_posting) VALUES (?, ?, ?,  CURDATE())");
-        $stmt->bind_param("iis", $id_pertanyaan, $logged_in_user_id, $isi_jawaban);
-
-        if ($stmt->execute()) {
-            echo "Jawaban berhasil diposting!";
-        } else {
-            echo "Error: " . $stmt->error;
-        }
-        $stmt->close();
-    }
-  }
-  $sql_pertanyaan = "SELECT pertanyaan.*, pengguna.username FROM pertanyaan JOIN pengguna ON pertanyaan.id_pengguna = pengguna.id WHERE 1 $whereClause ORDER BY tanggal_posting DESC";
-  $result_pertanyaan = $conn->query($sql_pertanyaan);
-    
-    if ($result_pertanyaan->num_rows > 0) {
-        while ($pertanyaan = $result_pertanyaan->fetch_assoc()) {
-        }
-    } else {
-        echo "Tidak ada pertanyaan yang ditemukan.";
-    }
-    
-$sql_pertanyaan = "SELECT pertanyaan.*, pengguna.username FROM pertanyaan JOIN pengguna ON pertanyaan.id_pengguna = pengguna.id WHERE 1 $whereClause ORDER BY tanggal_posting DESC";
-$result_pertanyaan = $conn->query($sql_pertanyaan);
-
-    if (isset($_POST['like']) && isset($_POST['id_jawaban']) && isset($_POST['id_pengguna'])) {
-        $id_jawaban = $_POST['id_jawaban'];
-        $id_pengguna = $_POST['id_pengguna'];
-
-        $sql_check_quality = "SELECT * FROM quality_point WHERE id_jawaban = ? AND id_pengguna = ?";
-        $stmt_check_quality = $conn->prepare($sql_check_quality);
-        $stmt_check_quality->bind_param("ii", $id_jawaban, $id_pengguna);
-        $stmt_check_quality->execute();
-        $result_check_quality = $stmt_check_quality->get_result();
-
-        if ($result_check_quality->num_rows == 0) {
-            $stmt_quality = $conn->prepare("INSERT INTO quality_point (id_pengguna, id_jawaban, jumlah_point, tanggal_pemberian) VALUES (?, ?, 2, CURDATE())");
-            $stmt_quality->bind_param("ii", $id_pengguna, $id_jawaban);
-
-            if ($stmt_quality->execute()) {
-            } else {
-                $stmt_quality->error;
-            }
-        } else {
-        }
-
-        $stmt_check_quality;
-    }
-
-    if (isset($_POST['unlike']) && isset($_POST['id_jawaban']) && isset($_POST['id_pengguna'])) {
-        $id_jawaban = $_POST['id_jawaban'];
-        $id_pengguna = $_POST['id_pengguna'];
-
-        $stmt_delete_quality = $conn->prepare("DELETE FROM quality_point WHERE id_jawaban = ? AND id_pengguna = ?");
-        $stmt_delete_quality->bind_param("ii", $id_jawaban, $id_pengguna);
-
-        if ($stmt_delete_quality->execute()) {
-        } else {
-            $stmt_delete_quality->error;
-        }
-
-        $stmt_delete_quality;
-    }
-
-    if (isset($_POST['like']) && isset($_POST['id_pertanyaan']) && isset($_POST['id_pengguna'])) {
-        $id_pertanyaan = $_POST['id_pertanyaan'];
-        $id_pengguna = $_POST['id_pengguna'];
-
-        $sql_check_quality = "SELECT * FROM quality_point WHERE id_pertanyaan = ? AND id_pengguna = ?";
-        $stmt_check_quality = $conn->prepare($sql_check_quality);
-        $stmt_check_quality->bind_param("ii", $id_pertanyaan, $id_pengguna);
-        $stmt_check_quality->execute();
-        $result_check_quality = $stmt_check_quality->get_result();
-
-        if ($result_check_quality->num_rows == 0) {
-            $stmt_quality = $conn->prepare("INSERT INTO quality_point (id_pengguna, id_pertanyaan, jumlah_point, tanggal_pemberian) VALUES (?, ?, 2, CURDATE())");
-            $stmt_quality->bind_param("ii", $id_pengguna, $id_pertanyaan);
-
-            if ($stmt_quality->execute()) {
-            } else {
-                $stmt_quality->error;
-            }
-        } else {
-        }
-
-        $stmt_check_quality;
-    }
-
-    if (isset($_POST['unlike']) && isset($_POST['id_pertanyaan']) && isset($_POST['id_pengguna'])) {
-        $id_pertanyaan = $_POST['id_pertanyaan'];
-        $id_pengguna = $_POST['id_pengguna'];
-
-        $stmt_delete_quality = $conn->prepare("DELETE FROM quality_point WHERE id_pertanyaan = ? AND id_pengguna = ?");
-        $stmt_delete_quality->bind_param("ii", $id_pertanyaan, $id_pengguna);
-
-        if ($stmt_delete_quality->execute()) {
-        } else {
-            $stmt_delete_quality->error;
-        }
-
-        $stmt_delete_quality;
-    }
-
-if (isset($_POST['submit_laporan'])) {
-    $alasan_laporan = isset($_POST['alasan_laporan']) ? $_POST['alasan_laporan'] : '';
-
-    if (isset($_POST['id_pertanyaan'])) {
-        $id_pertanyaan = $_POST['id_pertanyaan'];
-        $stmt = $conn->prepare("INSERT INTO laporan (id_pengguna, id_pertanyaan, alasan_laporan, tanggal_laporan) VALUES (?, ?, ?, CURDATE())");
-        $stmt->bind_param("iis", $id_pengguna, $id_pertanyaan, $alasan_laporan);
-    } elseif (isset($_POST['id_jawaban'])) {
-        $id_jawaban = $_POST['id_jawaban'];
-        $stmt = $conn->prepare("INSERT INTO laporan (id_pengguna, id_jawaban, alasan_laporan, tanggal_laporan) VALUES (?, ?, ?, CURDATE())");
-        $stmt->bind_param("iis", $id_pengguna, $id_jawaban, $alasan_laporan);
-    } else {
-        echo "ID pertanyaan atau jawaban tidak diberikan.";
-        exit;
-    }
-    if ($stmt->execute()) {
-        $laporanPesan = "Laporan berhasil dikirim!";
-    } else {
-        $laporanPesan = "Error: " . $stmt->error;
-    }
-
-    $stmt->close();
-}
-
-$sql_pertanyaan = "SELECT pertanyaan.*, pengguna.username FROM pertanyaan JOIN pengguna ON pertanyaan.id_pengguna = pengguna.id ORDER BY tanggal_posting DESC";
-$result_pertanyaan = $conn->query($sql_pertanyaan);
-?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Pertanyaan</title>
-    <link rel="stylesheet" href="../Dashboard/style.css">
-    <style>
+    <title>Pencarian Pertanyaan Berdasarkan Kategori</title>
+</head>
+<body>
+<style>
         <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -244,76 +96,46 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
         }
     </style>
     </style>
-    <script>
-        function tampilkanFormLaporan(id) {
-            const formLaporan = document.getElementById('form-laporan-' + id);
-            formLaporan.style.display = (formLaporan.style.display === 'none') ? 'block' : 'none';
-        }
-    </script>
-</head>
-<body>
-<nav>
-    <div class="wrapper">
-        <div class="logo"><a href='../Dashboard/DashboardUser.html'>HALO PETANI</a></div>
-        <div class="menu">
-            <ul>
-                <li><a href="../Dashboard/DashboardUser.html" class="tbl-biru">Beranda</a></li>
-                <li><a href="../Dashboard/Profil.html" class="tbl-biru">Profil</a></li>
-                <li><a href="Daftar.php" class="tbl-biru">Pertanyaan</a></li>
-                <li><a href="../Artikel/showartikeluser.php" class="tbl-biru">Artikel</a></li>
-                <li><a href="../Login/Login.html" class="tbl-biru">Log Out</a></li>
-            </ul>
-        </div>
-    </div>
-</nav>
-<div class="container">
-    <nav>
-        <div class="wrapper">
-            <div class="logo"><a>Daftar Pertanyaan</a></div>
-            <div class="menu">
-                
-                <ul>
-                    <li><a href="Posting.php" class="tbl-biru">Posting Pertanyaan</a></li>
-                    <li><a href="Top_Ten.php" class="tbl-biru">Top Pengguna</a></li>
-                </ul>
-            </div>
-        </div>
-        
-    </nav>
-    <div class="top-users">
-    </div>
+    <h1>Hasil Pencaharian Berdasarkan Kategori</h1>
     <body>
-    <div class="container">
-        <div>
-            <form action="Pencaharian_Pertanyaan.php" method="GET">
-                <input type="text" name="keyword" placeholder="Masukkan kata kunci pencarian" value="<?php echo htmlspecialchars($keyword); ?>">
-                <button type="submit">Cari</button>
-            </form>
-            <form action="Kategori_Pertanyaan.php" method="GET">
-                <label for="kategori">Pilih Kategori:</label><br>
-                <select id="kategori" name="kategori" required>
-                <option value="">Semua Kategori</option>
-                <option value="Sayuran">Sayuran</option>
-                <option value="Buah-Buahan">Buah-Buahan</option>
-                <option value="Biji-Bijian">Biji-Bijian</option>
+<div class="container">
+    <body></body>
+    <div class="container"></div>
+    <form action="" method="GET">
+        <label for="kategori">Pilih Kategori:</label><br>
+        <select id="kategori" name="kategori" required>
+            <option value="">Semua Kategori</option>
+            <option value="Sayuran">Sayuran</option>
+            <option value="Buah-Buahan">Buah-Buahan</option>
+            <option value="Biji-Bijian">Biji-Bijian</option>
         </select><br><br>
         <button type="submit">Cari</button>
     </form>
 
-        
-            <div class="search-results">
-            </div>
-        </div>
-    </div>
 </body>
-
+</html>
     <?php
+    include '../Login/config.php';
+
+    $laporanPesan = "";
+    $whereClause = "";
+    $kategori = $_GET['kategori'] ?? '';
+
+    if (!empty($kategori)) {
+        $whereClause .= " WHERE kategori = '$kategori'";
+    }
+
+    $sql_pertanyaan = "SELECT pertanyaan.*, pengguna.username 
+                        FROM pertanyaan 
+                        JOIN pengguna ON pertanyaan.id_pengguna = pengguna.id 
+                        $whereClause 
+                        ORDER BY pertanyaan.tanggal_posting DESC";
+
+    $result_pertanyaan = $conn->query($sql_pertanyaan);
     if (!empty($laporanPesan)) {
         echo "<script>alert('" . addslashes($laporanPesan) . "');</script>";
     }
-
-
-    if ($result_pertanyaan->num_rows > 0) {
+    if ($result_pertanyaan && $result_pertanyaan->num_rows > 0) {
         while ($pertanyaan = $result_pertanyaan->fetch_assoc()) {
             echo "<strong>Username:</strong> " . htmlspecialchars($pertanyaan["username"]) . "<br>";
             echo "<strong>Judul Pertanyaan:</strong> " . htmlspecialchars($pertanyaan["judul_pertanyaan"]) . "<br>";
@@ -438,39 +260,7 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
     } else {
         echo "Belum ada pertanyaan.";
     }
-    
     ?>
-</div>
+
 </body>
-<footer id="kontak">
-        <div class="wrapper">
-            <div class="footer-container">
-                <div class="footer-section">
-                    <h3>Halo Petani</h3>
-                    <p>Menyediakan layanan konsultasi berbayar selama 1 bulan</p>
-                </div>
-                <div class="footer-section">
-                    <h3>About</h3>
-                    <p>Website resmi yang menyediakan layanan untuk kepentingan petani</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Contact</h3>
-                    <p>Telp : 000000000101</p>
-                    <p>Jl. Badak dan kaki tiga</p>
-                    <p>Kode Pos: 666</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Social</h3>
-                    <p><b>YouTube:</b> Halo Petani</p>
-                </div>
-            </div>
-        </div>
-        </footer>
-    </div>
-    
-    <footer id="copyright">
-        <div class="wrapper">
-            &copy; 2024. <b>Halo Petani</b> All Rights Reserved.
-        </div>
-    </footer>
 </html>
