@@ -47,7 +47,7 @@ create table artikel(
     id_pengguna int,
     judul_pertanyaan varchar (100) not null,
     isi_pertanyaan TEXT,
-    tanggal_posting date,
+    tanggal_posting datetime default current_timestamp,
     kategori VARCHAR(255),
     foto LONGBLOB,
     status_dilaporkan boolean default false,
@@ -63,14 +63,6 @@ create table jawaban(
     status_dilaporkan boolean default false,
     foreign key (id_pertanyaan) references pertanyaan (id_pertanyaan),
     foreign key (id_pengguna) references pengguna(id));
-CREATE TABLE rating_jawaban (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_jawaban INT NOT NULL,
-    id_pengguna INT NOT NULL,
-    nilai INT NOT NULL CHECK (nilai >= 1 AND nilai <= 5),
-    tanggal_rating DATE NOT NULL,
-    FOREIGN KEY (id_jawaban) REFERENCES jawaban(id_jawaban),
-    FOREIGN KEY (id_pengguna) REFERENCES pengguna(id));
 CREATE TABLE Like_button (
   id INT PRIMARY KEY AUTO_INCREMENT,
   question_id INT NOT NULL,
@@ -87,14 +79,6 @@ create table quality_point(
     tanggal_pemberian date,
     foreign key (id_pengguna) references pengguna (id),
     foreign key (id_jawaban) references jawaban (id_jawaban));
-create table rating_artikel(
-    id_rating_artikel int not null primary key auto_increment,
-    id_artikel int,
-    id_pengguna int,
-    rating float,
-    tanggal_rating date,
-    foreign key (id_artikel) references artikel (id_artikel),
-    foreign key (id_pengguna) references pengguna (id));
 create table laporan(
     id_laporan int not null primary key auto_increment,
     id_pengguna int,
@@ -105,7 +89,14 @@ create table laporan(
     foreign key (id_pengguna) references pengguna (id),
     foreign key (id_pertanyaan) references pertanyaan (id_pertanyaan),
     foreign key (id_jawaban) references jawaban (id_jawaban));
-
+CREATE TABLE rating_artikel (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_artikel INT NOT NULL,
+    id_pengguna INT NOT NULL,
+    nilai INT NOT NULL CHECK (nilai >= 1 AND nilai <= 5),
+    tanggal_rating DATE NOT NULL,
+    FOREIGN KEY (id_artikel) REFERENCES jawaban(id_artikel),
+    FOREIGN KEY (id_pengguna) REFERENCES pengguna(id));
 create table artikel(
     id_artikel int not null primary key auto_increment,
     id_admin int not null,
