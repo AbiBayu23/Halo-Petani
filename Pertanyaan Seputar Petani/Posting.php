@@ -197,9 +197,9 @@ button[type="submit"]:hover {
 
         <label for="kategori">Kategori:</label><br>
         <select id="kategori" name="kategori" required>
-            <option value="Kategori 1">Kategori 1</option>
-            <option value="Kategori 2">Kategori 2</option>
-            <option value="Kategori 3">Kategori 3</option>
+            <option value="Kategori">Sayuran</option>
+            <option value="Kategori">Buah-Buahan</option>
+            <option value="Kategori">Biji-Bijian</option>
         </select><br><br>
 
         <label for="foto">Unggah Foto:</label><br>

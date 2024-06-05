@@ -10,6 +10,7 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
 
 $logged_in_user_id = $_SESSION['user_id'];
 $logged_in_username = $_SESSION['username'];
+$keyword = "";
 
 $laporanPesan = "";
 $whereClause = "";
@@ -28,19 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         $stmt->close();
     }
-    $kategori = $_GET['kategori'] ?? '';
-    $keyword = $_GET['keyword'] ?? '';
-    
-    if (!empty($kategori)) {
-        $whereClause .= " AND kategori = '$kategori'";
-    }
-    
-    if (!empty($keyword)) {
-        $whereClause .= " AND (isi_pertanyaan LIKE '%$keyword%' OR isi_jawaban LIKE '%$keyword%')";
-    }
-    $sql_pertanyaan = "SELECT pertanyaan.*, pengguna.username FROM pertanyaan JOIN pengguna ON pertanyaan.id_pengguna = pengguna.id WHERE 1 $whereClause ORDER BY pertanyaan.tanggal_posting DESC";
-    
-
   }
   $sql_pertanyaan = "SELECT pertanyaan.*, pengguna.username FROM pertanyaan JOIN pengguna ON pertanyaan.id_pengguna = pengguna.id WHERE 1 $whereClause ORDER BY tanggal_posting DESC";
   $result_pertanyaan = $conn->query($sql_pertanyaan);
@@ -133,31 +121,29 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
         $stmt_delete_quality;
     }
 
-    if (isset($_POST['id_pengguna']) && isset($_POST['alasan_laporan'])) {
-        $id_pengguna = $_POST['id_pengguna'];
-        $id_pertanyaan = isset($_POST['id_pertanyaan']) ? $_POST['id_pertanyaan'] : NULL;
-        $alasan_laporan = $_POST['alasan_laporan'];
+if (isset($_POST['submit_laporan'])) {
+    $alasan_laporan = isset($_POST['alasan_laporan']) ? $_POST['alasan_laporan'] : '';
 
-        $stmt = $conn->prepare("INSERT INTO laporan (id_pengguna, id_pertanyaan, alasan_laporan, tanggal_laporan) VALUES (?, ?, ?, ?, CURDATE())");
-        $stmt->bind_param("iiis", $id_pengguna, $id_pertanyaan, $alasan_laporan);
-        $stmt->execute();
-
+    if (isset($_POST['id_pertanyaan'])) {
+        $id_pertanyaan = $_POST['id_pertanyaan'];
+        $stmt = $conn->prepare("INSERT INTO laporan (id_pengguna, id_pertanyaan, alasan_laporan, tanggal_laporan) VALUES (?, ?, ?, CURDATE())");
+        $stmt->bind_param("iis", $id_pengguna, $id_pertanyaan, $alasan_laporan);
+    } elseif (isset($_POST['id_jawaban'])) {
+        $id_jawaban = $_POST['id_jawaban'];
+        $stmt = $conn->prepare("INSERT INTO laporan (id_pengguna, id_jawaban, alasan_laporan, tanggal_laporan) VALUES (?, ?, ?, CURDATE())");
+        $stmt->bind_param("iis", $id_pengguna, $id_jawaban, $alasan_laporan);
+    } else {
+        echo "ID pertanyaan atau jawaban tidak diberikan.";
+        exit;
+    }
+    if ($stmt->execute()) {
         $laporanPesan = "Laporan berhasil dikirim!";
+    } else {
+        $laporanPesan = "Error: " . $stmt->error;
     }
 
-    if (isset($_POST['id_pengguna']) && isset($_POST['alasan_laporan'])) {
-        $id_pengguna = $_POST['id_pengguna'];
-        $id_jawaban = isset($_POST['id_jawaban']) ? $_POST['id_jawaban'] : NULL;
-        $alasan_laporan = $_POST['alasan_laporan'];
-
-        $stmt = $conn->prepare("INSERT INTO laporan (id_pengguna, id_jawaban, alasan_laporan, tanggal_laporan) VALUES (?, ?, ?, ?, CURDATE())");
-        $stmt->bind_param("iiis", $id_pengguna, $id_jawaban, $alasan_laporan);
-        $stmt->execute();
-        $stmt->close();
-
-        $laporanPesan = "Laporan berhasil dikirim!";
-    }
-
+    $stmt->close();
+}
 
 $sql_pertanyaan = "SELECT pertanyaan.*, pengguna.username FROM pertanyaan JOIN pengguna ON pertanyaan.id_pengguna = pengguna.id ORDER BY tanggal_posting DESC";
 $result_pertanyaan = $conn->query($sql_pertanyaan);
@@ -285,25 +271,32 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
         <div class="wrapper">
             <div class="logo"><a>Daftar Pertanyaan</a></div>
             <div class="menu">
+                
                 <ul>
                     <li><a href="Posting.php" class="tbl-biru">Posting Pertanyaan</a></li>
                     <li><a href="Top_Ten.php" class="tbl-biru">Top Pengguna</a></li>
                 </ul>
             </div>
         </div>
+        
     </nav>
     <div class="top-users">
-        <form method="GET" action="Daftar.php">
-            <input type="text" name="keyword" placeholder="Cari pertanyaan...">
-            <select name="kategori">
-                <option value="">Semua Kategori</option>
-                <option value="Kategori1">Kategori 1</option>
-                <option value="Kategori2">Kategori 2</option>
-                <option value="Kategori3">Kategori 3</option>
-            </select>
-            <input type="submit" value="Cari">
-        </form>
     </div>
+    <body>
+    <div class="container">
+        <div>
+            <form action="Pencaharian_Pertanyaan.php" method="GET">
+                <input type="text" name="keyword" placeholder="Masukkan kata kunci pencarian" value="<?php echo htmlspecialchars($keyword); ?>">
+                <button type="submit">Cari</button>
+            </form>
+
+        
+            <div class="search-results">
+            </div>
+        </div>
+    </div>
+</body>
+
     <?php
     if (!empty($laporanPesan)) {
         echo "<script>alert('" . addslashes($laporanPesan) . "');</script>";
@@ -313,8 +306,9 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
     if ($result_pertanyaan->num_rows > 0) {
         while ($pertanyaan = $result_pertanyaan->fetch_assoc()) {
             echo "<strong>Username:</strong> " . htmlspecialchars($pertanyaan["username"]) . "<br>";
-            echo "<strong>Tanggal:</strong> " . htmlspecialchars($pertanyaan["tanggal_posting"]) . "<br>";
+            echo "<strong>Judul Pertanyaan:</strong> " . htmlspecialchars($pertanyaan["judul_pertanyaan"]) . "<br>";
             echo "<strong>Kategori:</strong> " . htmlspecialchars($pertanyaan["kategori"]) . "<br>";
+            echo "<strong>Tanggal:</strong> " . htmlspecialchars($pertanyaan["tanggal_posting"]) . "<br>";
             echo "<div class='pertanyaan'>";
             echo "<strong>Pertanyaan:</strong> " . htmlspecialchars($pertanyaan["isi_pertanyaan"]) . "<br>";
             if (!empty($pertanyaan["foto"])) {
@@ -399,10 +393,10 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                     }
                     echo "</form>";
                         ?>
-                        <button onclick="tampilkanFormLaporan(<?php echo $jawaban['id_jawaban']; ?>)">Laporkan</button>
-                        <form id="form-laporan-<?php echo $jawaban['id_jawaban']; ?>" method="POST" style="display: none;">
-                        <input type="hidden" name="id_jawaban" value="<?php echo $pertanyaan['id_jawaban']; ?>">
-                        <textarea name="laporan" placeholder="Deskripsikan laporan Anda"></textarea>
+                        <button onclick="tampilkanFormLaporan(<?php echo $pertanyaan['id_pertanyaan']; ?>)">Laporkan</button>
+                        <form id="form-laporan-<?php echo $pertanyaan['id_pertanyaan']; ?>" method="POST" style="display: none;">
+                        <input type="hidden" name="id_pertanyaan" value="<?php echo $pertanyaan['id_pertanyaan']; ?>">
+                        <textarea name="alasan_laporan" placeholder="Deskripsikan laporan Anda"></textarea>
                         <input type="submit" name="submit_laporan" value="Kirim Laporan">
                         </form>
                         <?php
@@ -434,6 +428,7 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
     } else {
         echo "Belum ada pertanyaan.";
     }
+    
     ?>
 </div>
 </body>
