@@ -296,6 +296,7 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                 <option value="Sayuran">Sayuran</option>
                 <option value="Buah-Buahan">Buah-Buahan</option>
                 <option value="Biji-Bijian">Biji-Bijian</option>
+
         </select><br><br>
         <button type="submit">Cari</button>
     </form>
