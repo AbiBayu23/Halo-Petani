@@ -123,7 +123,6 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
 
 if (isset($_POST['submit_laporan'])) {
     $alasan_laporan = isset($_POST['alasan_laporan']) ? $_POST['alasan_laporan'] : '';
-
     if (isset($_POST['id_pertanyaan'])) {
         $id_pertanyaan = $_POST['id_pertanyaan'];
         $stmt = $conn->prepare("INSERT INTO laporan (id_pengguna, id_pertanyaan, alasan_laporan, tanggal_laporan) VALUES (?, ?, ?, CURDATE())");
@@ -404,9 +403,9 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
                     }
                     echo "</form>";
                         ?>
-                        <button onclick="tampilkanFormLaporan(<?php echo $pertanyaan['id_pertanyaan']; ?>)">Laporkan</button>
-                        <form id="form-laporan-<?php echo $pertanyaan['id_pertanyaan']; ?>" method="POST" style="display: none;">
-                        <input type="hidden" name="id_pertanyaan" value="<?php echo $pertanyaan['id_pertanyaan']; ?>">
+                        <button onclick="tampilkanFormLaporan(<?php echo $jawaban['id_jawaban']; ?>)">Laporkan</button>
+                        <form id="form-laporan-<?php echo $jawaban['id_jawaban']; ?>" method="POST" style="display: none;">
+                        <input type="hidden" name="id_jawaban" value="<?php echo $jawaban['id_jawaban']; ?>">
                         <textarea name="alasan_laporan" placeholder="Deskripsikan laporan Anda"></textarea>
                         <input type="submit" name="submit_laporan" value="Kirim Laporan">
                         </form>
@@ -430,7 +429,7 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
             <button onclick="tampilkanFormLaporan(<?php echo $pertanyaan['id_pertanyaan']; ?>)">Laporkan</button>
             <form id="form-laporan-<?php echo $pertanyaan['id_pertanyaan']; ?>" method="POST" style="display: none;">
                 <input type="hidden" name="id_pertanyaan" value="<?php echo $pertanyaan['id_pertanyaan']; ?>">
-                <textarea name="laporan" placeholder="Deskripsikan laporan Anda"></textarea>
+                <textarea name="alasan_laporan" placeholder="Deskripsikan laporan Anda"></textarea>
                 <input type="submit" name="submit_laporan" value="Kirim Laporan">
             </form>
             <?php
