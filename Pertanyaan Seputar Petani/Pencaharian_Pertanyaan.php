@@ -160,7 +160,7 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../Dashboard/style.css">
     <style>
         <style>
         body {
@@ -256,15 +256,61 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
             formLaporan.style.display = (formLaporan.style.display === 'none') ? 'block' : 'none';
         }
     </script>
-</head><body>
+</head>
+<body>
+<nav>
+    <div class="wrapper">
+        <div class="logo"><a href='../Dashboard/DashboardUser.html'>HALO PETANI</a></div>
+        <div class="menu">
+            <ul>
+                <li><a href="../Dashboard/DashboardUser.html" class="tbl-biru">Beranda</a></li>
+                <li><a href="../Dashboard/Profil.html" class="tbl-biru">Profil</a></li>
+                <li><a href="Daftar.php" class="tbl-biru">Pertanyaan</a></li>
+                <li><a href="../Artikel/showartikeluser.php" class="tbl-biru">Artikel</a></li>
+                <li><a href="../Login/Login.html" class="tbl-biru">Log Out</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
 <div class="container">
-    <body>
+    <nav>
+        <div class="wrapper">
+            <div class="logo"><a>Daftar Pertanyaan</a></div>
+            <div class="menu">
+                
+                <ul>
+                    <li><a href="Posting.php" class="tbl-biru">Posting Pertanyaan</a></li>
+                    <li><a href="Top_Ten.php" class="tbl-biru">Top Pengguna</a></li>
+                </ul>
+            </div>
+        </div>
+        
+    </nav>
+    <div class="top-users">
+    </div>
+    <div class="container">
+        <div>
+            <form action="Pencaharian_Pertanyaan.php" method="GET">
+                <input type="text" name="keyword" placeholder="Masukkan kata kunci pencarian" value="<?php echo htmlspecialchars($keyword); ?>">
+                <button type="submit">Cari</button>
+            </form>
+            <form action="Kategori_Pertanyaan.php" method="GET">
+                <label for="kategori">Pilih Kategori:</label><br>
+                <select id="kategori" name="kategori" required>
+                <option value="">Semua Kategori</option>
+                <option value="Sayuran">Sayuran</option>
+                <option value="Buah-Buahan">Buah-Buahan</option>
+                <option value="Biji-Bijian">Biji-Bijian</option>
 
-    <h1>Hasil Pencaharian</h1>
-    <form action="" method="GET">
-        <input type="text" name="keyword" placeholder="Masukkan kata kunci pencarian" value="<?php echo htmlspecialchars($keyword); ?>">
+        </select><br><br>
         <button type="submit">Cari</button>
     </form>
+
+        
+            <div class="search-results">
+            </div>
+        </div>
+    </div>
     <?php
     if (!empty($laporanPesan)) {
         echo "<script>alert('" . addslashes($laporanPesan) . "');</script>";
@@ -402,5 +448,39 @@ $result_pertanyaan = $conn->query($sql_pertanyaan);
         }
         ?>
     </div>
+    </div>
+    </body>
+    <footer id="kontak">
+        <div class="wrapper">
+            <div class="footer-container">
+                <div class="footer-section">
+                    <h3>Halo Petani</h3>
+                    <p>Menyediakan layanan konsultasi berbayar selama 1 bulan</p>
+                </div>
+                <div class="footer-section">
+                    <h3>About</h3>
+                    <p>Website resmi yang menyediakan layanan untuk kepentingan petani</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p>Telp : 000000000101</p>
+                    <p>Jl. Badak dan kaki tiga</p>
+                    <p>Kode Pos: 666</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Social</h3>
+                    <p><b>YouTube:</b> Hallo Petani</p>
+                </div>
+            </div>
+        </div>
+        </footer>
+
+    
+    <footer id="copyright">
+        <div class="wrapper">
+            &copy; 2024. <b>Halo Petani</b> All Rights Reserved.
+        </div>
+    </footer>
+    
 </body>
 </html>
